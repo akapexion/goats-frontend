@@ -1,168 +1,198 @@
 import { useEffect, useState } from 'react'
-import { AppLayout } from '@/components/AppLayout'
+import PageContainer from '@/components/PageContainer'
 import api from '@/lib/axios'
 import toast from 'react-hot-toast'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Store, MapPin, Clock, Search, Leaf, Navigation, Calendar } from 'lucide-react'
+import { Store, MapPin, Clock, Search, Filter, Users, Navigation } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
-export default function CustomerMarkets() {
+export default function CustomerMarkets({ embedded = false }) {
   const navigate = useNavigate()
   const [markets, setMarkets] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [selectedDay, setSelectedDay] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
 
   const load = () => {
     setLoading(true)
     const params = {}
     if (search) params.search = search
+    if (selectedCity) params.city = selectedCity
     api.get('/markets', { params })
       .then(({ data }) => setMarkets(data.data?.data || data.data || []))
       .catch(() => toast.error('Failed to load markets'))
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [search])
+  useEffect(() => { load() }, [search, selectedCity])
 
-  const daysList = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const cities = ['Karachi', 'Lahore', 'Islamabad', 'Faisalabad', 'Peshawar', 'Quetta']
 
   const filteredMarkets = markets.filter((m) => {
-    if (!selectedDay) return true
-    return m.open_days?.toLowerCase().includes(selectedDay.toLowerCase())
+    if (!selectedCity) return true
+    return m.city?.toLowerCase().includes(selectedCity.toLowerCase()) || m.address?.toLowerCase().includes(selectedCity.toLowerCase())
   })
 
+  // Map center calculation
+  const defaultLat = filteredMarkets[0]?.latitude || 30.3753
+  const defaultLon = filteredMarkets[0]?.longitude || 69.3451
+  const mapBbox = `${defaultLon - 8},${defaultLat - 6},${defaultLon + 8},${defaultLat + 6}`
+
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Farmers Markets & Locations</h1>
-          <p className="text-muted-foreground">Browse nearby markets by location or operating days, and explore embedded pickup maps.</p>
-        </div>
+    <PageContainer embedded={embedded}>
+      <div className="space-y-8">
+        {/* Top Hero Banner matching Reference 2 */}
+        {!embedded && (
+          <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-700 rounded-2xl p-8 text-center text-white shadow-lg space-y-4">
+            <span className="inline-block px-3 py-1 bg-white/15 border border-white/20 text-white rounded-full text-[11px] font-bold tracking-wider uppercase">
+              REGIONAL LOCATIONS
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white">
+              Explore Local Farmers Markets
+            </h1>
+            <p className="text-sm md:text-base text-emerald-100 max-w-2xl mx-auto leading-relaxed">
+              Discover verified weekend agro markets near you, find participating farmers, and plan your fresh pickup trip.
+            </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-          <div className="relative flex-1">
-            <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search market name or city..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <select
-            value={selectedDay}
-            onChange={(e) => setSelectedDay(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm font-medium"
-          >
-            <option value="">All Operating Days</option>
-            {daysList.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-        </div>
+            {/* Filter Bar inside Hero */}
+            <form onSubmit={(e) => { e.preventDefault(); load() }} className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 pt-2">
+              <div className="relative flex-1">
+                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder="Search by market name or area..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="bg-white text-foreground pl-9 text-xs rounded-xl h-10 border-0 shadow-sm"
+                />
+              </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}><CardContent className="pt-6"><Skeleton className="h-60 w-full" /></CardContent></Card>
-            ))}
-          </div>
-        ) : filteredMarkets.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Store className="size-12 mx-auto mb-3 opacity-30" />
-            <p>No markets match your criteria.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMarkets.map((m) => {
-              const lat = m.latitude || 37.7749
-              const lon = m.longitude || -122.4194
-              const bbox = `${lon - 0.015},${lat - 0.015},${lon + 0.015},${lat + 0.015}`
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="bg-white text-foreground text-xs rounded-xl h-10 px-3 font-semibold border-0 shadow-sm focus:outline-none"
+              >
+                <option value="">All Cities</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
 
-              return (
-                <Card
-                  key={m.id}
-                  data-aos="fade-up"
-                  className="backdrop-blur-md bg-card/80 border shadow-md hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-primary/10 flex flex-col justify-between overflow-hidden transition-all duration-300"
-                >
-                  <div>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <CardTitle className="text-base font-bold">{m.name}</CardTitle>
-                          {m.city && <CardDescription className="text-xs">{m.city}</CardDescription>}
-                        </div>
-                        <Badge variant={m.is_active ? 'default' : 'secondary'}>
-                          {m.is_active ? 'Active Market' : 'Inactive'}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-3">
-                      <div className="space-y-1.5 text-xs text-muted-foreground">
-                        {m.address && (
-                          <p className="flex items-start gap-1.5 font-medium text-foreground/80">
-                            <MapPin className="size-3.5 shrink-0 mt-0.5 text-primary" />
-                            {m.address}
-                          </p>
-                        )}
-                        {m.open_days && (
-                          <p className="flex items-center gap-1.5">
-                            <Calendar className="size-3.5 shrink-0 text-amber-500" />
-                            {m.open_days}
-                            {m.open_time && ` (${m.open_time} – ${m.close_time})`}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="relative rounded-lg overflow-hidden border h-36 bg-accent/50">
-                        <iframe
-                          title={`Map for ${m.name}`}
-                          width="100%"
-                          height="100%"
-                          frameBorder="0"
-                          scrolling="no"
-                          src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`}
-                          className="w-full h-full filter saturate-[0.85] contrast-[1.05]"
-                        />
-                      </div>
-                    </CardContent>
-                  </div>
-
-                  <div className="p-6 pt-0 space-y-2">
-                    <div className="flex gap-2">
-                      <a
-                        href={`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=;${lat}%2C${lon}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button size="sm" variant="outline" className="w-full text-xs">
-                          <Navigation className="size-3 mr-1 text-blue-500" /> Get Directions
-                        </Button>
-                      </a>
-
-                      <Button
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => navigate(`/customer/farmers?market_id=${m.id}`)}
-                      >
-                        <Leaf className="size-3 mr-1 text-green-300" /> View Farmers
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
+              <Button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs h-10 px-6 rounded-xl shadow-md gap-1">
+                <Filter className="size-3.5" /> Filter
+              </Button>
+            </form>
           </div>
         )}
+
+        {/* Section 1: Interactive OpenStreetMap Discovery */}
+        <div className="bg-card border rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <MapPin className="size-5 text-emerald-600" />
+                Interactive OpenStreetMap Discovery
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Click any marker to view market address, operating days, and meet participating farmers.
+              </p>
+            </div>
+            <Badge variant="secondary" className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs rounded-full px-3 py-1">
+              {filteredMarkets.length} Markets Located
+            </Badge>
+          </div>
+
+          <div className="relative rounded-xl overflow-hidden border h-72 md:h-80 bg-accent/40 shadow-inner">
+            <iframe
+              title="Interactive OpenStreetMap Farmers Markets"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              scrolling="no"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBbox}&layer=mapnik`}
+              className="w-full h-full filter saturate-[0.9] contrast-[1.02]"
+            />
+          </div>
+        </div>
+
+        {/* Section 2: All Registered Markets Header & Cards */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center border-b pb-3">
+            <h2 className="text-xl font-extrabold text-foreground">All Registered Markets</h2>
+            <span className="text-xs font-semibold text-muted-foreground">Showing {filteredMarkets.length} locations</span>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}><CardContent className="pt-6"><Skeleton className="h-56 w-full" /></CardContent></Card>
+              ))}
+            </div>
+          ) : filteredMarkets.length === 0 ? (
+            <div className="text-center py-16 bg-card rounded-2xl border text-muted-foreground">
+              <Store className="size-12 mx-auto mb-3 opacity-30" />
+              <p className="font-semibold">No markets registered matching your search filter.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredMarkets.map((m) => {
+                const farmersCount = m.farmers_count ?? (m.farmers?.length || 1)
+                return (
+                  <Card key={m.id} className="bg-card border rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300 text-[10px] font-bold gap-1 px-2.5 py-0.5 rounded-full">
+                          <MapPin className="size-3 text-emerald-600" /> {m.city || 'Karachi'}
+                        </Badge>
+                        <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold rounded-full">
+                          Open Season
+                        </Badge>
+                      </div>
+
+                      <CardTitle className="text-lg font-bold text-foreground">{m.name}</CardTitle>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{m.address || 'Central Community Ground, City Area'}</p>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4 pt-0">
+                      {/* Operating Hours Box matching Reference 2 */}
+                      <div className="bg-muted/40 rounded-xl p-3 space-y-1 text-xs">
+                        <div className="flex items-center gap-2 text-foreground font-semibold">
+                          <Clock className="size-3.5 text-emerald-600" />
+                          <span>Operating Days: <span className="font-bold text-emerald-700 dark:text-emerald-400">{m.open_days || 'Saturday, Sunday'}</span></span>
+                        </div>
+                        <div className="text-muted-foreground text-[11px] pl-5">
+                          Hours: {m.open_time && m.close_time ? `${m.open_time} - ${m.close_time}` : '08:00 AM - 02:00 PM'}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button
+                          onClick={() => navigate(`/farmers?market_id=${m.id}`)}
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 rounded-xl gap-1.5 shadow-sm"
+                        >
+                          <Users className="size-3.5" /> View Farmers ({farmersCount})
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-9 rounded-xl shrink-0"
+                          title="Open map location"
+                          onClick={() => navigate(`/markets/${m.id}`)}
+                        >
+                          <Navigation className="size-4 text-emerald-600" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </AppLayout>
+    </PageContainer>
   )
 }

@@ -82,13 +82,13 @@ export default function AdminCategories() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this category? Products using it will be unaffected.')) return
+    if (!confirm('Are you sure you want to delete this category?')) return
     try {
       await api.delete(`/admin/categories/${id}`)
-      toast.success('Category deleted')
+      toast.success('Category deleted successfully')
       load(true)
-    } catch {
-      toast.error('Failed to delete category')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete category')
     }
   }
 

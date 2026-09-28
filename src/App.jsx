@@ -27,9 +27,11 @@ import FarmerReviews from '@/pages/farmer/FarmerReviews'
 
 import CustomerDashboard from '@/pages/customer/CustomerDashboard'
 import CustomerProducts from '@/pages/customer/CustomerProducts'
+import ProductDetail from '@/pages/customer/ProductDetail'
 import CustomerFarmers from '@/pages/customer/CustomerFarmers'
 import FarmerDetail from '@/pages/customer/FarmerDetail'
 import CustomerMarkets from '@/pages/customer/CustomerMarkets'
+import MarketDetail from '@/pages/customer/MarketDetail'
 import CustomerOrders from '@/pages/customer/CustomerOrders'
 import CustomerFavorites from '@/pages/customer/CustomerFavorites'
 import EverythingYouNeed from './pages/EverythingYouNeed'
@@ -44,12 +46,21 @@ function AuthRedirect() {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Publicly accessible pages without login */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/features" element={<EverythingYouNeed />} />
       <Route path="/about" element={<HowItWorks />} />
       <Route path="/login" element={<><AuthRedirect /><LoginPage /></>} />
       <Route path="/register" element={<><AuthRedirect /><RegisterPage /></>} />
 
+      <Route path="/markets" element={<CustomerMarkets />} />
+      <Route path="/markets/:id" element={<MarketDetail />} />
+      <Route path="/farmers" element={<CustomerFarmers />} />
+      <Route path="/farmers/:id" element={<FarmerDetail />} />
+      <Route path="/products" element={<CustomerProducts />} />
+      <Route path="/products/:id" element={<ProductDetail />} />
+
+      {/* Admin routes */}
       <Route element={<RequireAuth role="admin" />}>
         <Route path="/admin/dashboard"  element={<AdminDashboard />} />
         <Route path="/admin/users"       element={<AdminUsers />} />
@@ -61,6 +72,7 @@ function AppRoutes() {
         <Route path="/admin/reports"     element={<AdminReports />} />
       </Route>
 
+      {/* Farmer routes */}
       <Route element={<RequireAuth role="farmer" />}>
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
         <Route path="/farmer/profile"   element={<FarmerProfile />} />
@@ -69,14 +81,17 @@ function AppRoutes() {
         <Route path="/farmer/reviews"   element={<FarmerReviews />} />
       </Route>
 
+      {/* Authenticated Customer routes */}
       <Route element={<RequireAuth role="customer" />}>
         <Route path="/customer/dashboard"       element={<CustomerDashboard />} />
         <Route path="/customer/products"        element={<CustomerProducts />} />
+        <Route path="/customer/products/:id"    element={<ProductDetail />} />
         <Route path="/customer/farmers"         element={<CustomerFarmers />} />
         <Route path="/customer/farmers/:id"     element={<FarmerDetail />} />
         <Route path="/customer/markets"         element={<CustomerMarkets />} />
-        <Route path="/customer/orders"          element={<CustomerOrders />} />
-        <Route path="/customer/favorites"       element={<CustomerFavorites />} />
+        <Route path="/customer/markets/:id" element={<MarketDetail />} />
+        <Route path="/customer/orders"      element={<CustomerOrders />} />
+        <Route path="/customer/favorites"   element={<CustomerFavorites />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

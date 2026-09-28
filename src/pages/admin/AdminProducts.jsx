@@ -53,8 +53,8 @@ export default function AdminProducts() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">All Products</h1>
-          <p className="text-muted-foreground">View and moderate products across the platform</p>
+          <h1 className="text-2xl font-bold">All Platform Products</h1>
+          <p className="text-muted-foreground">View and moderate products, assigned categories, and target markets</p>
         </div>
 
         <form onSubmit={handleSearch} className="flex gap-2 max-w-sm">
@@ -73,8 +73,9 @@ export default function AdminProducts() {
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
-                <TableHead>Farmer</TableHead>
+                <TableHead>Farmer Stall</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Market</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Status</TableHead>
@@ -85,14 +86,14 @@ export default function AdminProducts() {
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                     <Package className="size-10 mx-auto mb-2 opacity-30" />
                     No products found
                   </TableCell>
@@ -104,7 +105,8 @@ export default function AdminProducts() {
                     <TableCell className="text-muted-foreground text-sm">
                       {p.farmer?.stall_name || p.farmer?.user?.name || '—'}
                     </TableCell>
-                    <TableCell className="text-sm">{p.category?.name || '—'}</TableCell>
+                    <TableCell className="text-sm font-medium">{p.category?.name || '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{p.market?.name || p.farmer?.market?.name || '—'}</TableCell>
                     <TableCell>${Number(p.price).toFixed(2)} / {p.unit}</TableCell>
                     <TableCell>{p.stock_quantity}</TableCell>
                     <TableCell>

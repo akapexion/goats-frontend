@@ -13,8 +13,9 @@ import {
   CheckCircle2,
   Users
 } from 'lucide-react'
+import PageHeroBanner from '@/components/PageHeroBanner'
 
-export default function HowItWorks() {
+export default function HowItWorks({ embedded = false }) {
   const steps = [
     {
       step: "01",
@@ -60,33 +61,35 @@ export default function HowItWorks() {
   ]
 
   return (
-    <PublicLayout>
+    <PublicLayout embedded={embedded}>
       {/* Hero Banner */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-primary/10 via-background to-background overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center relative z-10" data-aos="fade-up">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/15 text-primary mb-4 border border-primary/20">
-            <Heart className="size-3.5 fill-primary" /> About MarketLink
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            How <span className="text-primary">MarketLink</span> Works
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
-            Our mission is to strengthen local food networks by connecting small-scale farmers directly with conscious consumers through a simple pre-order pickup marketplace.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" className="shadow-lg font-semibold">
-                Join the Community <ArrowRight className="size-4 ml-2" />
-              </Button>
-            </Link>
-            <Link to="/features">
-              <Button variant="outline" size="lg">
-                Explore Features
-              </Button>
-            </Link>
-          </div>
+      {!embedded && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <PageHeroBanner
+            badge="About MarketLink"
+            title={
+              <>
+                How <span className="text-primary">MarketLink</span> Works
+              </>
+            }
+            description="Our mission is to strengthen local food networks by connecting small-scale farmers directly with conscious consumers through a simple pre-order pickup marketplace."
+            icon={Heart}
+          >
+            <div className="flex flex-wrap gap-3">
+              <Link to="/register">
+                <Button size="sm" className="shadow-md font-bold">
+                  Join the Community <ArrowRight className="size-4 ml-1.5" />
+                </Button>
+              </Link>
+              <Link to="/features">
+                <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 backdrop-blur hover:bg-white/20 hover:text-white">
+                  Explore Features
+                </Button>
+              </Link>
+            </div>
+          </PageHeroBanner>
         </div>
-      </section>
+      )}
 
       {/* 4 Simple Steps */}
       <section className="py-16 px-4">

@@ -16,7 +16,9 @@ import {
   CheckCircle2
 } from "lucide-react"
 
-export default function EverythingYouNeed() {
+import PageHeroBanner from '@/components/PageHeroBanner'
+
+export default function EverythingYouNeed({ embedded = false }) {
   const mainFeatures = [
     {
       icon: Leaf,
@@ -76,33 +78,30 @@ export default function EverythingYouNeed() {
   ]
 
   return (
-    <PublicLayout>
-      {/* Hero Banner */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-primary/10 via-background to-background overflow-hidden">
-        <div className="max-w-5xl mx-auto text-center relative z-10" data-aos="fade-up">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/15 text-primary mb-4 border border-primary/20">
-            <ShieldCheck className="size-3.5" /> Complete Platform Capabilities
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Everything You Need for <span className="text-primary">Local Commerce</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
-            MarketLink is engineered from the ground up to empower regional farmers and offer consumers a frictionless farm-to-table pre-order experience.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" className="shadow-lg font-semibold">
-                Get Started Free <ArrowRight className="size-4 ml-2" />
-              </Button>
-            </Link>
-            <Link to="/about">
-              <Button variant="outline" size="lg">
-                See How It Works
-              </Button>
-            </Link>
-          </div>
+    <PublicLayout embedded={embedded}>
+      {!embedded && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <PageHeroBanner
+            badge="Complete Platform Capabilities"
+            title="Everything You Need for Local Commerce"
+            description="MarketLink is engineered from the ground up to empower regional farmers and offer consumers a frictionless farm-to-table pre-order experience."
+            icon={ShieldCheck}
+          >
+            <div className="flex flex-wrap gap-3">
+              <Link to="/register">
+                <Button size="sm" className="shadow-md font-bold">
+                  Get Started Free <ArrowRight className="size-4 ml-1.5" />
+                </Button>
+              </Link>
+              <Link to="/about">
+                <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 backdrop-blur">
+                  See How It Works
+                </Button>
+              </Link>
+            </div>
+          </PageHeroBanner>
         </div>
-      </section>
+      )}
 
       {/* Grid Features */}
       <section id="features" className="py-16 px-4">
