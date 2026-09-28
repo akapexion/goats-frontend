@@ -27,7 +27,6 @@ export default function ProductDetail() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [loginModalMessage, setLoginModalMessage] = useState("")
 
-  // Pre-order checkout modal state
   const [showCheckout, setShowCheckout] = useState(false)
   const [pickupDate, setPickupDate] = useState("")
   const [pickupTime, setPickupTime] = useState("")
@@ -177,7 +176,6 @@ export default function ProductDetail() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          {/* Product Image & Stock Card */}
           <Card className="overflow-hidden border shadow-lg bg-card">
             <div className="relative h-72 sm:h-96 bg-accent/40 flex items-center justify-center">
               <img
@@ -218,7 +216,6 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
 
-          {/* Product Details & Ordering Action */}
           <div className="space-y-6">
             <Card className="border shadow-lg p-6 space-y-6 bg-card">
               <div className="space-y-2 border-b pb-4">
@@ -236,7 +233,6 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              {/* Quantity Selector & Action Buttons */}
               <div className="space-y-4 pt-2 border-t">
                 {isAvailable && (
                   <div className="space-y-2">
@@ -287,7 +283,6 @@ export default function ProductDetail() {
               </div>
             </Card>
 
-            {/* Farmer & Market Information Card */}
             {farmer && (
               <Card className="border shadow-md p-6 space-y-4 bg-card/80">
                 <div className="flex items-center justify-between border-b pb-3">
@@ -331,7 +326,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Pre-Order Modal */}
       {showCheckout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <Card className="w-full max-w-md shadow-2xl">

@@ -323,7 +323,6 @@ export default function FarmerDetail() {
               </CardContent>
             </Card>
 
-            {/* Farmer's Products */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold flex items-center gap-2">
@@ -375,7 +374,6 @@ export default function FarmerDetail() {
               )}
             </div>
 
-            {/* Customer Reviews Section */}
             {reviews.length > 0 && (
               <div className="space-y-4">
                 <h2 className="text-lg font-bold">Customer Reviews ({reviews.length})</h2>

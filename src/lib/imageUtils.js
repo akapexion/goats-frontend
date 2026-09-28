@@ -1,6 +1,5 @@
 const BASE_URL = 'http://localhost:8000/storage'
 
-// Per-category Unsplash fallback images for demo products
 const CATEGORY_FALLBACKS = {
   'Vegetables': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&q=80',
   'Fresh Fruits': 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&q=80',
@@ -13,25 +12,16 @@ const CATEGORY_FALLBACKS = {
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1506484381205-f7945653044d?w=400&q=80'
 
-/**
- * Builds the full image URL for a product.
- * Handles: null, bare filename (missing products/ prefix), and correct path.
- */
 export function getProductImageUrl(imagePath) {
   if (!imagePath) return null
 
-  // Already has the subfolder prefix (e.g. "products/filename.jpg")
   if (imagePath.includes('/')) {
     return `${BASE_URL}/${imagePath}`
   }
 
-  // Bare filename — prepend the products/ subfolder
   return `${BASE_URL}/products/${imagePath}`
 }
 
-/**
- * Returns a category-appropriate fallback image URL.
- */
 export function getCategoryFallback(categoryName) {
   return CATEGORY_FALLBACKS[categoryName] || DEFAULT_FALLBACK
 }

@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
-import { AiOutlineFacebook } from "react-icons/ai";
-import { FaInstagram } from "react-icons/fa";
-import { CiTwitter } from "react-icons/ci";
-import { Sparkles } from "lucide-react";
+import { AiOutlineFacebook } from "react-icons/ai"
+import { FaInstagram } from "react-icons/fa"
+import { CiTwitter } from "react-icons/ci"
+import { Sparkles } from "lucide-react"
 
 export default function Footer() {
   const { theme } = useTheme()
@@ -12,7 +12,6 @@ export default function Footer() {
     <footer className="bg-background/90 backdrop-blur-md text-slate-200 mt-auto border-t border-gray-600">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-          {/* Brand Bio */}
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <div className="flex items-center gap-2">
@@ -37,7 +36,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
           <div>
             <h4 className="font-bold text-sm text-white mb-4 tracking-wide">Navigation</h4>
             <ul className="space-y-2.5 text-xs text-slate-400">
@@ -50,7 +48,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* User Portals */}
           <div>
             <h4 className="font-bold text-sm text-white mb-4 tracking-wide">User Portals</h4>
             <ul className="space-y-2.5 text-xs text-slate-400">
@@ -60,7 +57,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Stay Connected */}
           <div>
             <h4 className="font-bold text-sm text-white mb-4 tracking-wide">Stay Connected</h4>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
@@ -82,7 +78,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom copyright & floating AI button bar */}
         <div className="border-t border-gray-600 pt-6 text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} MarketLink (eGreen Basket). All rights reserved.</p>
           <div className="flex items-center gap-6 text-slate-400 text-[11px]">

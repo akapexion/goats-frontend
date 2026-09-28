@@ -277,7 +277,6 @@ export default function CustomerProducts({ embedded = false }) {
   const [markets, setMarkets] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Filters state
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedMarket, setSelectedMarket] = useState('')
@@ -286,7 +285,6 @@ export default function CustomerProducts({ embedded = false }) {
   const [maxPrice, setMaxPrice] = useState('')
   const [inStockOnly, setInStockOnly] = useState(false)
 
-  // Cart & Modals
   const [cart, setCart] = useState({})
   const [showCheckout, setShowCheckout] = useState(false)
   const [ordering, setOrdering] = useState(false)
@@ -390,7 +388,6 @@ export default function CustomerProducts({ embedded = false }) {
           />
         )}
 
-        {/* Multi-Filter Bar */}
         <div className="bg-card border p-4 rounded-xl shadow-sm space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
@@ -474,7 +471,6 @@ export default function CustomerProducts({ embedded = false }) {
           </div>
         </div>
 
-        {/* Product Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (

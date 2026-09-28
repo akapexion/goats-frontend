@@ -1,53 +1,50 @@
-import { useEffect, useState } from "react";
-import PageContainer from "@/components/PageContainer";
-import api from "@/lib/axios";
-import toast from "react-hot-toast";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Store, CheckCircle, ShoppingBag, Package } from "lucide-react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { getProductImageUrl, getCategoryFallback } from "@/lib/imageUtils";
+import { useEffect, useState } from "react"
+import PageContainer from "@/components/PageContainer"
+import api from "@/lib/axios"
+import toast from "react-hot-toast"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { MapPin, Store, CheckCircle, ShoppingBag, Package } from "lucide-react"
+import { Link, useSearchParams, useNavigate } from "react-router-dom"
+import { getProductImageUrl, getCategoryFallback } from "@/lib/imageUtils"
 
 export default function CustomerFarmers({ embedded = false }) {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [farmers, setFarmers] = useState([]);
-  const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedMarket, setSelectedMarket] = useState(
-    searchParams.get("market_id") || "",
-  );
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [farmers, setFarmers] = useState([])
+  const [markets, setMarkets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedMarket, setSelectedMarket] = useState(searchParams.get("market_id") || "")
 
   const load = (params = {}) => {
-    setLoading(true);
+    setLoading(true)
     api
       .get("/farmers", { params })
       .then(({ data }) => setFarmers(data.data?.data || data.data || []))
       .catch(() => toast.error("Failed to load farmers"))
-      .finally(() => setLoading(false));
-  };
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
-    const marketId = searchParams.get("market_id") || "";
-    setSelectedMarket(marketId);
-    load(marketId ? { market_id: marketId } : {});
+    const marketId = searchParams.get("market_id") || ""
+    setSelectedMarket(marketId)
+    load(marketId ? { market_id: marketId } : {})
     api
       .get("/markets")
       .then(({ data }) => setMarkets(data.data?.data || data.data || []))
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+  }, [])
 
   const handleMarketChange = (id) => {
-    setSelectedMarket(id);
-    load({ market_id: id || undefined });
-  };
+    setSelectedMarket(id)
+    load({ market_id: id || undefined })
+  }
 
   return (
     <PageContainer embedded={embedded}>
       <div className="space-y-8">
-        {/* Top Hero Banner matching Reference 1 */}
         {!embedded && (
           <div
             className="relative rounded-2xl p-8 text-center text-white shadow-lg"
@@ -57,35 +54,27 @@ export default function CustomerFarmers({ embedded = false }) {
               backgroundPosition: "center",
             }}
           >
-            {/* Dark overlay */}
             <div className="absolute inset-0 bg-black/80"></div>
-
-            {/* Content */}
             <div className="relative z-10 space-y-4">
               <span className="inline-block px-3 py-1 bg-white/15 border border-white/20 text-white rounded-full text-[11px] font-bold tracking-wider uppercase">
                 CERTIFIED GROWERS & ARTISANS
               </span>
-
               <h1 className="text-3xl md:text-4xl font-extrabold text-white">
                 Local Market Farmers
               </h1>
-
               <p className="text-sm md:text-base text-emerald-100 max-w-2xl mx-auto leading-relaxed">
                 Connect with trusted local producers, inspect stall schedules,
                 and reserve directly from their weekly stock.
               </p>
-
               <div className="flex justify-center">
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/30 rounded-lg px-4 py-2 text-xs font-semibold">
                   <span>Filter by Market:</span>
-
                   <select
                     value={selectedMarket}
                     onChange={(e) => handleMarketChange(e.target.value)}
                     className="bg-white text-black border rounded px-3 py-1 font-medium focus:outline-none"
                   >
                     <option value="">All Verified Markets</option>
-
                     {markets.map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.name}
@@ -98,7 +87,6 @@ export default function CustomerFarmers({ embedded = false }) {
           </div>
         )}
 
-        {/* Directory Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-4">
           <div>
             <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
@@ -116,7 +104,6 @@ export default function CustomerFarmers({ embedded = false }) {
           </Badge>
         </div>
 
-        {/* Farmers Cards List */}
         {loading ? (
           <div className="space-y-6">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -137,13 +124,12 @@ export default function CustomerFarmers({ embedded = false }) {
         ) : (
           <div className="space-y-8">
             {farmers.map((f) => {
-              const harvestProducts = f.products || [];
+              const harvestProducts = f.products || []
               return (
                 <div
                   key={f.id}
                   className="bg-card border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-6"
                 >
-                  {/* Farmer Header Row */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                       <div className="size-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xl border border-emerald-200 dark:border-emerald-800 shrink-0">
@@ -186,7 +172,6 @@ export default function CustomerFarmers({ embedded = false }) {
                     </Link>
                   </div>
 
-                  {/* 3 Metrics Metadata Row */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-y py-4 text-xs">
                     <div>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
@@ -196,9 +181,7 @@ export default function CustomerFarmers({ embedded = false }) {
                         {f.market?.name || "Local Farmers Market"}
                       </p>
                       <p className="text-muted-foreground text-[11px] mt-0.5">
-                        {f.address ||
-                          f.market?.address ||
-                          "Stall Location, Community Market"}
+                        {f.address || f.market?.address || "Stall Location, Community Market"}
                       </p>
                     </div>
 
@@ -231,14 +214,12 @@ export default function CustomerFarmers({ embedded = false }) {
                     </div>
                   </div>
 
-                  {/* Farmer Bio */}
                   {f.description && (
                     <p className="text-xs text-muted-foreground leading-relaxed italic">
                       "{f.description}"
                     </p>
                   )}
 
-                  {/* Stock Header & Product Grid */}
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                       <ShoppingBag className="size-4 text-emerald-600" />
@@ -265,7 +246,7 @@ export default function CustomerFarmers({ embedded = false }) {
                                 alt={p.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  e.target.src = getCategoryFallback(p.category?.name);
+                                  e.target.src = getCategoryFallback(p.category?.name)
                                 }}
                               />
                             </div>
@@ -284,7 +265,6 @@ export default function CustomerFarmers({ embedded = false }) {
                                   Stock: {p.stock_quantity} {p.unit || "units"}
                                 </p>
                               </div>
-
                               <Link to={`/products`}>
                                 <Button
                                   size="sm"
@@ -300,11 +280,11 @@ export default function CustomerFarmers({ embedded = false }) {
                     )}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         )}
       </div>
     </PageContainer>
-  );
+  )
 }

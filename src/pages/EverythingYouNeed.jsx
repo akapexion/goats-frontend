@@ -103,7 +103,6 @@ export default function EverythingYouNeed({ embedded = false }) {
         </div>
       )}
 
-      {/* Grid Features */}
       <section id="features" className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12" data-aos="fade-up">
@@ -141,7 +140,6 @@ export default function EverythingYouNeed({ embedded = false }) {
         </div>
       </section>
 
-      {/* Highlights Section */}
       <section className="py-16 px-4 bg-muted/30 border-y">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div data-aos="fade-right">

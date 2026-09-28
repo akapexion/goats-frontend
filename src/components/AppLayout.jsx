@@ -1,8 +1,8 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import toast from "react-hot-toast";
-import { useTheme } from "@/context/ThemeContext";
-import { AOSInit } from "@/components/AOS";
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/context/AuthContext"
+import toast from "react-hot-toast"
+import { useTheme } from "@/context/ThemeContext"
+import { AOSInit } from "@/components/AOS"
 import {
   LayoutDashboard,
   Package,
@@ -21,8 +21,8 @@ import {
   ChevronDown,
   Sun,
   Moon,
-} from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+} from "lucide-react"
+import { useState, useRef, useEffect } from "react"
 
 const navItems = {
   admin: [
@@ -50,21 +50,21 @@ const navItems = {
     { label: "My Orders", href: "/customer/orders", icon: ShoppingCart },
     { label: "Favorites", href: "/customer/favorites", icon: Heart },
   ],
-};
+}
 
 function ProfileDropdown({ user, onLogout }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
 
-  const initial = user?.name?.charAt(0).toUpperCase() || "?";
+  const initial = user?.name?.charAt(0).toUpperCase() || "?"
 
   return (
     <div className="relative" ref={ref}>
@@ -114,8 +114,8 @@ function ProfileDropdown({ user, onLogout }) {
           <div className="border-t mt-1 pt-1">
             <button
               onClick={() => {
-                setOpen(false);
-                onLogout();
+                setOpen(false)
+                onLogout()
               }}
               className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-500 bg-red-500/10 transition-colors rounded-b-xl cursor-pointer"
             >
@@ -126,25 +126,25 @@ function ProfileDropdown({ user, onLogout }) {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export function AppLayout({ children }) {
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  const items = navItems[user?.role] || [];
+  const items = navItems[user?.role] || []
 
   const handleLogout = async () => {
-    await logout();
-    toast.success("Signed out successfully");
-    navigate("/login");
-  };
+    await logout()
+    toast.success("Signed out successfully")
+    navigate("/login")
+  }
 
-  const isActive = (href) => location.pathname === href;
+  const isActive = (href) => location.pathname === href
 
   return (
     <div className="min-h-screen bg-background flex w-full max-w-full overflow-x-hidden">
@@ -157,9 +157,9 @@ export function AppLayout({ children }) {
         <div className="h-16 flex items-center justify-center px-5 border-b shrink-0">
           <Link to="/">
             <div className="flex justify-center">
-               <div> 
-                  <img src="/logo-main.png" alt="MarketLink Logo" className="h-8" />
-                </div>
+              <div>
+                <img src="/logo-main.png" alt="MarketLink Logo" className="h-8" />
+              </div>
             </div>
           </Link>
         </div>
@@ -208,9 +208,7 @@ export function AppLayout({ children }) {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-            title={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? (
               <Sun className="size-5" />
@@ -227,5 +225,5 @@ export function AppLayout({ children }) {
         </main>
       </div>
     </div>
-  );
+  )
 }

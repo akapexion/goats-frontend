@@ -62,7 +62,6 @@ export default function HowItWorks({ embedded = false }) {
 
   return (
     <PublicLayout embedded={embedded}>
-      {/* Hero Banner */}
       {!embedded && (
         <div className="max-w-6xl mx-auto px-4 pt-6">
           <PageHeroBanner
@@ -91,7 +90,6 @@ export default function HowItWorks({ embedded = false }) {
         </div>
       )}
 
-      {/* 4 Simple Steps */}
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14" data-aos="fade-up">
@@ -128,7 +126,6 @@ export default function HowItWorks({ embedded = false }) {
         </div>
       </section>
 
-      {/* Customer vs Farmer Roles */}
       <section className="py-16 px-4 bg-muted/30 border-y">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12" data-aos="fade-up">

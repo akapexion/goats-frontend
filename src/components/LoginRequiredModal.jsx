@@ -15,7 +15,7 @@ export default function LoginRequiredModal({
   message = "Please sign in or create an account to place your pre-order."
 }) {
   const { login, register } = useAuth()
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const [mode, setMode] = useState('login')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState({})
@@ -81,7 +81,6 @@ export default function LoginRequiredModal({
           <CardTitle className="text-xl font-bold">{title}</CardTitle>
           <CardDescription className="text-xs leading-relaxed">{message}</CardDescription>
 
-          {/* Mode Switcher Tabs */}
           <div className="flex bg-muted/60 p-1 rounded-xl mt-3 text-xs font-semibold">
             <button
               type="button"

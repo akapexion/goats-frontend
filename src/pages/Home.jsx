@@ -13,12 +13,10 @@ import data from "../../src/app/dashboard/data.json"
 export default function Home() {
   return (
     <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        }
-      }
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      }}
     >
       <AppSidebar variant="inset" />
       <SidebarInset>

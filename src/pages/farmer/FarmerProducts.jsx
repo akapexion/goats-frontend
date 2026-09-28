@@ -56,7 +56,6 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
             <Input value={form.name} onChange={set('name')} required placeholder="e.g. Organic Fresh Tomatoes" />
           </div>
 
-          {/* Dropdown 1: Category */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Product Category *</Label>
             <select
@@ -75,7 +74,6 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
             )}
           </div>
 
-          {/* Dropdown 2: Market */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Target Farmers Market *</Label>
             <select

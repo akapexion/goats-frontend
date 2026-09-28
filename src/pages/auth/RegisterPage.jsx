@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { useTheme } from "@/context/ThemeContext";
-import toast from "react-hot-toast";
-import { Eye, EyeOff, Sun, Moon, ArrowLeft, Leaf, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from "react"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { useAuth } from "@/context/AuthContext"
+import { useTheme } from "@/context/ThemeContext"
+import toast from "react-hot-toast"
+import { Eye, EyeOff, Sun, Moon, ArrowLeft, Leaf, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 
 function MarketLinkLogo({ size = 36, className = '' }) {
   return (
@@ -23,14 +23,14 @@ function MarketLinkLogo({ size = 36, className = '' }) {
       style={{ width: size, height: size }}
       className={`object-cover rounded-xl shadow-md border border-emerald-500/20 ${className}`}
     />
-  );
+  )
 }
 
 export default function RegisterPage() {
-  const { register } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { register } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const [form, setForm] = useState({
     name: "",
@@ -40,34 +40,34 @@ export default function RegisterPage() {
     role: searchParams.get("role") === "farmer" ? "farmer" : "customer",
     phone: "",
     address: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
+  })
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({});
-    setLoading(true);
+    e.preventDefault()
+    setErrors({})
+    setLoading(true)
     try {
-      const user = await register(form);
-      toast.success("Account created successfully!");
+      const user = await register(form)
+      toast.success("Account created successfully!")
       if (user.role === 'customer') {
-        navigate('/');
+        navigate('/')
       } else {
-        navigate(`/${user.role}/dashboard`);
+        navigate(`/${user.role}/dashboard`)
       }
     } catch (err) {
-      const data = err.response?.data;
+      const data = err.response?.data
       if (data?.errors) {
-        setErrors(data.errors);
+        setErrors(data.errors)
       } else {
-        toast.error(data?.message || "Registration failed.");
+        toast.error(data?.message || "Registration failed.")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="dark relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-slate-950 text-slate-100">
@@ -82,7 +82,6 @@ export default function RegisterPage() {
           <ArrowLeft className="size-4" /> Back to home
         </Link>
       </div>
-
 
       <div className="relative z-10 w-full max-w-lg my-2 animate-fade-in">
         <Card className="backdrop-blur-xl bg-card/90 dark:bg-card/85 border shadow-2xl hover:-translate-y-1 hover:border-primary hover:shadow-primary/10 transition-all duration-300">
@@ -144,9 +143,7 @@ export default function RegisterPage() {
                     id="email"
                     type="email"
                     value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
                     required
                   />
                   {errors.email && (
@@ -164,9 +161,7 @@ export default function RegisterPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Min. 8 characters"
                       value={form.password}
-                      onChange={(e) =>
-                        setForm({ ...form, password: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
                       required
                     />
                     <button
@@ -213,9 +208,7 @@ export default function RegisterPage() {
                     id="phone"
                     placeholder="+92 000000000"
                     value={form.phone}
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   />
                 </div>
               </div>
@@ -242,5 +235,5 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

@@ -15,10 +15,9 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-            <img src="/logo-main.png" alt="MarketLink Logo" className="h-6" />
+          <img src="/logo-main.png" alt="MarketLink Logo" className="h-6" />
         </Link>
 
-        {/* Center Pill Nav Bar matching references */}
         <nav className="hidden md:flex items-center gap-1 bg-muted/60 dark:bg-muted/30 p-1.5 rounded-full border text-xs font-medium">
           {[
             { path: "/", label: "Home" },
@@ -43,7 +42,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {/* Wishlist Icon */}
           <Link
             to={user ? "/customer/favorites" : "/products"}
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
@@ -55,7 +53,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Cart Icon */}
           <Link
             to="/products"
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"

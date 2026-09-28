@@ -49,7 +49,6 @@ function AuthRedirect() {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Publicly accessible pages without login */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/features" element={<EverythingYouNeed />} />
       <Route path="/about" element={<HowItWorks />} />
@@ -63,38 +62,35 @@ function AppRoutes() {
       <Route path="/products" element={<CustomerProducts />} />
       <Route path="/products/:id" element={<ProductDetail />} />
 
-      {/* Admin routes */}
       <Route element={<RequireAuth role="admin" />}>
-        <Route path="/admin/dashboard"  element={<AdminDashboard />} />
-        <Route path="/admin/users"       element={<AdminUsers />} />
-        <Route path="/admin/farmers"     element={<AdminFarmers />} />
-        <Route path="/admin/markets"     element={<AdminMarkets />} />
-        <Route path="/admin/categories"  element={<AdminCategories />} />
-        <Route path="/admin/products"    element={<AdminProducts />} />
-        <Route path="/admin/reviews"     element={<AdminReviews />} />
-        <Route path="/admin/reports"     element={<AdminReports />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/farmers" element={<AdminFarmers />} />
+        <Route path="/admin/markets" element={<AdminMarkets />} />
+        <Route path="/admin/categories" element={<AdminCategories />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/reviews" element={<AdminReviews />} />
+        <Route path="/admin/reports" element={<AdminReports />} />
       </Route>
 
-      {/* Farmer routes */}
       <Route element={<RequireAuth role="farmer" />}>
         <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
-        <Route path="/farmer/profile"   element={<FarmerProfile />} />
-        <Route path="/farmer/products"  element={<FarmerProducts />} />
-        <Route path="/farmer/orders"    element={<FarmerOrders />} />
-        <Route path="/farmer/reviews"   element={<FarmerReviews />} />
+        <Route path="/farmer/profile" element={<FarmerProfile />} />
+        <Route path="/farmer/products" element={<FarmerProducts />} />
+        <Route path="/farmer/orders" element={<FarmerOrders />} />
+        <Route path="/farmer/reviews" element={<FarmerReviews />} />
       </Route>
 
-      {/* Authenticated Customer routes */}
       <Route element={<RequireAuth role="customer" />}>
-        <Route path="/customer/dashboard"       element={<CustomerDashboard />} />
-        <Route path="/customer/products"        element={<CustomerProducts />} />
-        <Route path="/customer/products/:id"    element={<ProductDetail />} />
-        <Route path="/customer/farmers"         element={<CustomerFarmers />} />
-        <Route path="/customer/farmers/:id"     element={<FarmerDetail />} />
-        <Route path="/customer/markets"         element={<CustomerMarkets />} />
+        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/products" element={<CustomerProducts />} />
+        <Route path="/customer/products/:id" element={<ProductDetail />} />
+        <Route path="/customer/farmers" element={<CustomerFarmers />} />
+        <Route path="/customer/farmers/:id" element={<FarmerDetail />} />
+        <Route path="/customer/markets" element={<CustomerMarkets />} />
         <Route path="/customer/markets/:id" element={<MarketDetail />} />
-        <Route path="/customer/orders"      element={<CustomerOrders />} />
-        <Route path="/customer/favorites"   element={<CustomerFavorites />} />
+        <Route path="/customer/orders" element={<CustomerOrders />} />
+        <Route path="/customer/favorites" element={<CustomerFavorites />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

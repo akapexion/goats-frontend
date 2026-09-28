@@ -1,72 +1,54 @@
-import { useEffect, useState } from "react";
-import PageContainer from "@/components/PageContainer";
-import api from "@/lib/axios";
-import toast from "react-hot-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Store,
-  MapPin,
-  Clock,
-  Search,
-  Filter,
-  Users,
-  Navigation,
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react"
+import PageContainer from "@/components/PageContainer"
+import api from "@/lib/axios"
+import toast from "react-hot-toast"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Store, MapPin, Clock, Search, Filter, Users, Navigation } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import MarketsDiscoveryMap from "@/components/MarketsDiscoveryMap"
 
 export default function CustomerMarkets({ embedded = false }) {
-  const navigate = useNavigate();
-  const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const navigate = useNavigate()
+  const mapSectionRef = useRef(null)
+  const [markets, setMarkets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [selectedCity, setSelectedCity] = useState("")
+  const [selectedMarketId, setSelectedMarketId] = useState(null)
 
   const load = () => {
-    setLoading(true);
-    const params = {};
-    if (search) params.search = search;
-    if (selectedCity) params.city = selectedCity;
+    setLoading(true)
+    const params = {}
+    if (search) params.search = search
+    if (selectedCity) params.city = selectedCity
     api
       .get("/markets", { params })
       .then(({ data }) => setMarkets(data.data?.data || data.data || []))
       .catch(() => toast.error("Failed to load markets"))
-      .finally(() => setLoading(false));
-  };
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
-    load();
-  }, [search, selectedCity]);
+    load()
+  }, [search, selectedCity])
 
-  const cities = [
-    "Karachi",
-    "Lahore",
-    "Islamabad",
-    "Faisalabad",
-    "Peshawar",
-    "Quetta",
-  ];
+  const cities = ["Karachi", "Lahore", "Islamabad", "Faisalabad", "Peshawar", "Quetta"]
 
   const filteredMarkets = markets.filter((m) => {
-    if (!selectedCity) return true;
+    if (!selectedCity) return true
     return (
       m.city?.toLowerCase().includes(selectedCity.toLowerCase()) ||
       m.address?.toLowerCase().includes(selectedCity.toLowerCase())
-    );
-  });
-
-  // Map center calculation
-  const defaultLat = filteredMarkets[0]?.latitude || 30.3753;
-  const defaultLon = filteredMarkets[0]?.longitude || 69.3451;
-  const mapBbox = `${defaultLon - 8},${defaultLat - 6},${defaultLon + 8},${defaultLat + 6}`;
+    )
+  })
 
   return (
     <PageContainer embedded={embedded}>
       <div className="space-y-8">
-        {/* Top Hero Banner matching Reference 2 */}
         {!embedded && (
           <div
             className="relative rounded-2xl p-8 text-center text-white shadow-lg overflow-hidden"
@@ -76,35 +58,27 @@ export default function CustomerMarkets({ embedded = false }) {
               backgroundPosition: "center",
             }}
           >
-            {/* Dark overlay */}
             <div className="absolute inset-0 bg-black/80"></div>
-
-            {/* Content */}
             <div className="relative z-10 space-y-4">
               <span className="inline-block px-3 py-1 bg-white/15 border border-white/20 text-white rounded-full text-[11px] font-bold tracking-wider uppercase">
                 REGIONAL LOCATIONS
               </span>
-
               <h1 className="text-3xl md:text-4xl font-extrabold text-white">
                 Explore Local Farmers Markets
               </h1>
-
               <p className="text-sm md:text-base text-emerald-100 max-w-2xl mx-auto leading-relaxed">
                 Discover verified weekend agro markets near you, find
                 participating farmers, and plan your fresh pickup trip.
               </p>
-
-              {/* Filter Bar inside Hero */}
               <form
                 onSubmit={(e) => {
-                  e.preventDefault();
-                  load();
+                  e.preventDefault()
+                  load()
                 }}
                 className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 pt-2"
               >
                 <div className="relative flex-1">
                   <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-
                   <Input
                     placeholder="Search by market name or area..."
                     value={search}
@@ -112,21 +86,16 @@ export default function CustomerMarkets({ embedded = false }) {
                     className="bg-white text-foreground pl-9 text-xs rounded-xl h-10 border-0 shadow-sm"
                   />
                 </div>
-
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="bg-white text-black text-xs rounded-xl h-10 px-3 font-semibold border-0 shadow-sm focus:outline-none"
                 >
                   <option value="">All Cities</option>
-
                   {cities.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-
                 <Button
                   type="submit"
                   className="bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs h-10 px-6 rounded-xl shadow-md gap-1"
@@ -139,8 +108,8 @@ export default function CustomerMarkets({ embedded = false }) {
           </div>
         )}
 
-        {/* Section 1: Interactive OpenStreetMap Discovery */}
-        <div className="bg-card border rounded-2xl p-6 shadow-sm space-y-4">
+        {/* Interactive OpenStreetMap Discovery */}
+        <div ref={mapSectionRef} className="bg-card border rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -148,8 +117,7 @@ export default function CustomerMarkets({ embedded = false }) {
                 Interactive OpenStreetMap Discovery
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Click any marker to view market address, operating days, and
-                meet participating farmers.
+                Click any marker to view market address, operating days, and meet participating farmers.
               </p>
             </div>
             <Badge
@@ -160,20 +128,14 @@ export default function CustomerMarkets({ embedded = false }) {
             </Badge>
           </div>
 
-          <div className="relative rounded-xl overflow-hidden border h-72 md:h-80 bg-accent/40 shadow-inner">
-            <iframe
-              title="Interactive OpenStreetMap Farmers Markets"
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              scrolling="no"
-              src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBbox}&layer=mapnik`}
-              className="w-full h-full filter saturate-[0.9] contrast-[1.02]"
-            />
-          </div>
+          <MarketsDiscoveryMap
+            markets={filteredMarkets}
+            selectedMarketId={selectedMarketId}
+            onMarketSelect={(m) => setSelectedMarketId(m.id)}
+          />
         </div>
 
-        {/* Section 2: All Registered Markets Header & Cards */}
+        {/* All Registered Markets Grid */}
         <div className="space-y-6">
           <div className="flex justify-between items-center border-b pb-3">
             <h2 className="text-xl font-extrabold text-foreground">
@@ -204,12 +166,14 @@ export default function CustomerMarkets({ embedded = false }) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMarkets.map((m) => {
-                const farmersCount =
-                  m.farmers_count ?? (m.farmers?.length || 1);
+                const farmersCount = m.farmers_count ?? (m.farmers?.length || 1)
+                const isSelected = selectedMarketId === m.id
                 return (
                   <Card
                     key={m.id}
-                    className="bg-card border rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between overflow-hidden"
+                    className={`bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden ${
+                      isSelected ? "ring-2 ring-emerald-500 border-emerald-500" : ""
+                    }`}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
@@ -224,7 +188,6 @@ export default function CustomerMarkets({ embedded = false }) {
                           Open Season
                         </Badge>
                       </div>
-
                       <CardTitle className="text-lg font-bold text-foreground">
                         {m.name}
                       </CardTitle>
@@ -234,7 +197,6 @@ export default function CustomerMarkets({ embedded = false }) {
                     </CardHeader>
 
                     <CardContent className="space-y-4 pt-0">
-                      {/* Operating Hours Box matching Reference 2 */}
                       <div className="bg-muted/40 rounded-xl p-3 space-y-1 text-xs">
                         <div className="flex items-center gap-2 text-foreground font-semibold">
                           <Clock className="size-3.5 text-emerald-600" />
@@ -258,27 +220,29 @@ export default function CustomerMarkets({ embedded = false }) {
                           onClick={() => navigate(`/farmers?market_id=${m.id}`)}
                           className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 rounded-xl gap-1.5 shadow-sm"
                         >
-                          <Users className="size-3.5" /> View Farmers (
-                          {farmersCount})
+                          <Users className="size-3.5" /> View Farmers ({farmersCount})
                         </Button>
                         <Button
                           variant="outline"
                           size="icon"
-                          className="size-9 rounded-xl shrink-0"
-                          title="Open map location"
-                          onClick={() => navigate(`/markets/${m.id}`)}
+                          className="size-9 rounded-xl shrink-0 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
+                          title="Focus marker on interactive map"
+                          onClick={() => {
+                            setSelectedMarketId(m.id)
+                            mapSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+                          }}
                         >
                           <Navigation className="size-4 text-emerald-600" />
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
-                );
+                )
               })}
             </div>
           )}
         </div>
       </div>
     </PageContainer>
-  );
+  )
 }

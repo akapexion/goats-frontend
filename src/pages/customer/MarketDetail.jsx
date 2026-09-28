@@ -118,7 +118,6 @@ export default function MarketDetail() {
           </Badge>
         </div>
 
-        {/* Market Overview Hero Card */}
         <Card className="backdrop-blur-md bg-card/90 border shadow-lg overflow-hidden">
           <CardHeader className="border-b bg-muted/20 pb-6">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -173,7 +172,6 @@ export default function MarketDetail() {
             </div>
           </CardHeader>
 
-          {/* Map Preview */}
           <CardContent className="p-6 space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <MapPin className="size-4 text-primary" /> Interactive Market Location & Directions

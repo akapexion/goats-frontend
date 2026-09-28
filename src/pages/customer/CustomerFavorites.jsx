@@ -61,7 +61,6 @@ export default function CustomerFavorites() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Saved Markets */}
             {markets.length > 0 && (
               <div>
                 <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-primary">
@@ -102,7 +101,6 @@ export default function CustomerFavorites() {
               </div>
             )}
 
-            {/* Saved Farmers */}
             {farmers.length > 0 && (
               <div>
                 <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
@@ -140,7 +138,6 @@ export default function CustomerFavorites() {
               </div>
             )}
 
-            {/* Saved Products */}
             {products.length > 0 && (
               <div>
                 <h2 className="text-lg font-bold mb-3 flex items-center gap-2">

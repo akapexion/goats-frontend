@@ -48,7 +48,6 @@ export default function LandingPage() {
 
   return (
     <PublicLayout>
-      {/* 1. Hero Section matching Reference 4 */}
       <section className="relative min-h-[580px] flex items-center justify-center overflow-hidden px-4 text-center">
         <img
           src="/banner.jpg"
@@ -79,7 +78,6 @@ export default function LandingPage() {
             Discover local farmers markets, reserve fresh weekly harvests for pickup, and support your local farm community.
           </p>
 
-          {/* Search Bar & Quick Tags */}
           <div className="max-w-2xl mx-auto pt-2 space-y-3">
             <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur p-2 rounded-2xl border border-white/30 shadow-2xl">
               <div className="relative flex-1">
@@ -113,7 +111,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2. Floating Stats Bar matching Reference 4 */}
       <section className="max-w-6xl mx-auto px-4 -mt-10 relative z-20">
         <div className="bg-card border rounded-2xl p-6 shadow-xl grid grid-cols-2 md:grid-cols-4 gap-6 text-center backdrop-blur-md">
           {stats.map((s, idx) => (
@@ -125,7 +122,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Section: Everything fresh, right around you */}
       <section className="py-20 px-4 max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">WHY CHOOSE US</span>
@@ -177,7 +173,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Section: Explore Fresh Categories matching Reference 4 */}
       <section className="py-16 px-4 bg-muted/30 border-y">
         <div className="max-w-6xl mx-auto space-y-10">
           <div className="text-center space-y-2">
@@ -212,7 +207,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Section: Featured Produce This Week */}
       <section className="py-20 px-4 max-w-6xl mx-auto space-y-8">
         <div className="flex justify-between items-end">
           <div>
@@ -227,7 +221,6 @@ export default function LandingPage() {
         <CustomerProducts embedded={true} />
       </section>
 
-      {/* 6. Section: Regional Farmers Markets */}
       <section className="py-20 px-4 max-w-6xl mx-auto bg-muted/20 border-y space-y-8">
         <div className="text-center space-y-2">
           <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block">LOCAL LOCATIONS</span>
@@ -240,7 +233,6 @@ export default function LandingPage() {
         <CustomerMarkets embedded={true} />
       </section>
 
-      {/* 7. Section: Are you a local farmer CTA matching Reference 4 */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-700 rounded-3xl p-10 md:p-14 text-center text-white shadow-2xl space-y-6">
           <span className="inline-block px-3.5 py-1 bg-white/15 border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider text-emerald-200">
