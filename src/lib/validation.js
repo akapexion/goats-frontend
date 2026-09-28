@@ -1,22 +1,10 @@
-/**
- * Validation utilities for form fields across MarketLink
- * Standard regex patterns and user-friendly error messages
- */
-
 export const REGEX = {
-  // RFC 5322 compliant email regex
   EMAIL: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/,
-  // Phone: supports Pakistani (+92 / 03...) and international formats (10-15 digits, optional + or dashes)
   PHONE: /^(\+?[1-9]\d{1,14}|(\+92|0)?3[0-9]{9})$/,
-  // Name: letters, spaces, hyphens, and apostrophes (min 2 chars)
   NAME: /^[a-zA-Z\u00C0-\u024F\u1E00-\u1EFF\s'-]{2,100}$/,
-  // Positive decimal number for prices (e.g. 10, 10.5, 99.99)
   PRICE: /^(0|[1-9]\d*)(\.\d{1,2})?$/,
-  // Non-negative integer for stock and quantities
   INTEGER: /^(0|[1-9]\d*)$/,
-  // Time in HH:MM (24h) format
   TIME: /^([01]\d|2[0-3]):[0-5]\d$/,
-  // Date in YYYY-MM-DD format
   DATE: /^\d{4}-\d{2}-\d{2}$/,
 }
 
@@ -44,7 +32,7 @@ export function validateName(name, fieldLabel = 'Name') {
 }
 
 export function validatePhone(phone) {
-  if (!phone || !phone.trim()) return null // Optional field
+  if (!phone || !phone.trim()) return null 
   const cleaned = phone.replace(/[\s-]/g, '')
   if (!REGEX.PHONE.test(cleaned)) {
     return 'Please enter a valid phone number (e.g. 03001234567 or +923001234567).'
