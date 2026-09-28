@@ -178,8 +178,8 @@ export default function CartPage() {
                   <CardContent className="p-0 divide-y divide-border/60">
                     {group.items.map(({ product, quantity }) => {
                       const imageUrl =
-                        getProductImageUrl(product.image_path) ||
-                        getCategoryFallback(product.category?.name)
+                        getProductImageUrl(product.image_url || product.image_path || product.image) ||
+                        getCategoryFallback()
                       const itemTotal = (Number(product.price) * quantity).toFixed(2)
 
                       return (
@@ -191,7 +191,7 @@ export default function CartPage() {
                               className="size-16 rounded-xl object-cover border bg-accent/20 shrink-0 cursor-pointer"
                               onClick={() => navigate(`/products/${product.id}`)}
                               onError={(e) => {
-                                e.target.src = getCategoryFallback(product.category?.name)
+                                e.target.src = getCategoryFallback()
                               }}
                             />
                             <div className="space-y-1 min-w-0">

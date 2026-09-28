@@ -16,7 +16,8 @@ export default function ProductCard({ product, onRequireLogin }) {
 
   const isAvailable = product.status === 'available' && product.stock_quantity > 0
   const isLowStock = isAvailable && product.stock_quantity <= 5
-  const imageUrl = getProductImageUrl(product.image_path) || getCategoryFallback(product.category?.name)
+  const dbImage = product.image_url || product.image_path || product.image
+  const imageUrl = getProductImageUrl(dbImage) || getCategoryFallback()
   const cartQty = cart[product.id]?.quantity || 0
   const wishlisted = isWishlisted(product.id)
 
@@ -51,7 +52,7 @@ export default function ProductCard({ product, onRequireLogin }) {
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
-              e.target.src = getCategoryFallback(product.category?.name)
+              e.target.src = getCategoryFallback()
             }}
           />
           <div className="absolute top-2 right-2">

@@ -1,27 +1,33 @@
 const BASE_URL = 'http://localhost:8000/storage'
 
-const CATEGORY_FALLBACKS = {
-  'Vegetables': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&q=80',
-  'Fresh Fruits': 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&q=80',
-  'Fresh Herbs': 'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=400&q=80',
-  'Dairy & Eggs': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80',
-  'Honey & Preserves': 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=400&q=80',
-  'Grains & Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80',
-  'Organic': 'https://images.unsplash.com/photo-1472653431158-6364773b2a56?w=400&q=80',
-}
-
-const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1506484381205-f7945653044d?w=400&q=80'
+export const PLACEHOLDER_PRODUCT_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' fill='none'%3E%3Crect width='400' height='300' fill='%2310b98115'/%3E%3Cpath d='M200 110c-35 0-60 25-60 60 0 30 25 55 60 55s60-25 60-55c0-35-25-60-60-60z' fill='%2310b98130'/%3E%3Cpath d='M200 95c0-15 10-25 20-25' stroke='%23059669' stroke-width='4' stroke-linecap='round'/%3E%3Ctext x='200' y='250' font-family='sans-serif' font-size='14' font-weight='600' fill='%23059669' text-anchor='middle'%3EFarm Fresh Produce%3C/text%3E%3C/svg%3E"
 
 export function getProductImageUrl(imagePath) {
   if (!imagePath) return null
 
-  if (imagePath.includes('/')) {
-    return `${BASE_URL}/${imagePath}`
+  // If already a full URL or data URI, return as-is
+  if (
+    imagePath.startsWith('http://') ||
+    imagePath.startsWith('https://') ||
+    imagePath.startsWith('data:')
+  ) {
+    return imagePath
   }
 
-  return `${BASE_URL}/products/${imagePath}`
+  // If starts with /storage/ or storage/
+  if (imagePath.startsWith('/storage/')) {
+    return `http://localhost:8000${imagePath}`
+  }
+  if (imagePath.startsWith('storage/')) {
+    return `http://localhost:8000/${imagePath}`
+  }
+
+  const cleanPath = imagePath.replace(/^\/+/, '')
+  return `${BASE_URL}/${cleanPath}`
 }
 
-export function getCategoryFallback(categoryName) {
-  return CATEGORY_FALLBACKS[categoryName] || DEFAULT_FALLBACK
+export function getCategoryFallback() {
+  return PLACEHOLDER_PRODUCT_IMAGE
 }
+

@@ -198,10 +198,10 @@ export default function ProductDetail() {
           <Card className="overflow-hidden border shadow-lg bg-card">
             <div className="relative h-72 sm:h-96 bg-accent/40 flex items-center justify-center">
               <img
-                src={getProductImageUrl(product.image_path) || getCategoryFallback(product.category?.name)}
+                src={getProductImageUrl(product.image_url || product.image_path || product.image) || getCategoryFallback()}
                 alt={product.name}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = getCategoryFallback(product.category?.name) }}
+                onError={(e) => { e.target.src = getCategoryFallback() }}
               />
               <div className="absolute top-4 right-4">
                 <Badge variant={isAvailable ? (isLowStock ? "warning" : "default") : "destructive"} className="px-3 py-1 text-xs shadow-md">
