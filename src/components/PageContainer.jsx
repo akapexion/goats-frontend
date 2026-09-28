@@ -9,13 +9,13 @@ export default function PageContainer({ children, embedded = false }) {
     return <div className="w-full">{children}</div>
   }
 
-  if (user) {
+  if (user && user.role !== 'customer') {
     return <AppLayout>{children}</AppLayout>
   }
 
   return (
     <PublicLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8 min-h-[calc(100vh-10rem)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-10rem)]">
         {children}
       </div>
     </PublicLayout>

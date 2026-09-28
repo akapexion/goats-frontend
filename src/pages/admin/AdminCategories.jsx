@@ -9,9 +9,29 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Pencil, Trash2, X, Tag } from 'lucide-react'
 
+import { validateName } from '@/lib/validation'
+
 function CategoryForm({ initial, onSave, onCancel, loading }) {
   const [form, setForm] = useState(initial || { name: '', description: '' })
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const [errors, setErrors] = useState({})
+
+  const set = (k) => (e) => {
+    setForm({ ...form, [k]: e.target.value })
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: null }))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setErrors({})
+
+    const nameErr = validateName(form.name, 'Category Name')
+    if (nameErr) {
+      setErrors({ name: nameErr })
+      return
+    }
+
+    onSave(form)
+  }
 
   return (
     <Card className="mb-6">
@@ -20,10 +40,11 @@ function CategoryForm({ initial, onSave, onCancel, loading }) {
         <button onClick={onCancel}><X className="size-4" /></button>
       </CardHeader>
       <CardContent>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Name *</Label>
             <Input value={form.name} onChange={set('name')} required placeholder="e.g. Vegetables" />
+            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
           </div>
           <div className="space-y-2">
             <Label>Description</Label>

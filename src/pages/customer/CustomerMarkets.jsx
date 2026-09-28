@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Store, MapPin, Clock, Search, Filter, Users, Navigation } from "lucide-react"
+import { Store, MapPin, Clock, Search, Filter, Users, Navigation, Loader2, X } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import MarketsDiscoveryMap from "@/components/MarketsDiscoveryMap"
+import MarketsDiscoveryMap, {
+  getMarketCoordinates,
+  calculateHaversineDistance,
+} from "@/components/MarketsDiscoveryMap"
 
 export default function CustomerMarkets({ embedded = false }) {
   const navigate = useNavigate()
@@ -19,6 +22,8 @@ export default function CustomerMarkets({ embedded = false }) {
   const [search, setSearch] = useState("")
   const [selectedCity, setSelectedCity] = useState("")
   const [selectedMarketId, setSelectedMarketId] = useState(null)
+  const [userLocation, setUserLocation] = useState(null)
+  const [locating, setLocating] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -38,13 +43,61 @@ export default function CustomerMarkets({ embedded = false }) {
 
   const cities = ["Karachi", "Lahore", "Islamabad", "Faisalabad", "Peshawar", "Quetta"]
 
-  const filteredMarkets = markets.filter((m) => {
-    if (!selectedCity) return true
-    return (
-      m.city?.toLowerCase().includes(selectedCity.toLowerCase()) ||
-      m.address?.toLowerCase().includes(selectedCity.toLowerCase())
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.")
+      return
+    }
+
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setUserLocation({ lat: latitude, lng: longitude })
+        setLocating(false)
+        toast.success("Location acquired! Markets sorted by nearest distance.")
+      },
+      (error) => {
+        setLocating(false)
+        let msg = "Could not retrieve your current location."
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = "Location permission denied. Please allow location access in your browser."
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = "Location information is unavailable. Please try again later."
+        } else if (error.code === error.TIMEOUT) {
+          msg = "Location request timed out. Please try again."
+        }
+        toast.error(msg)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     )
-  })
+  }
+
+  const handleClearLocation = () => {
+    setUserLocation(null)
+    toast.success("Location filter cleared.")
+  }
+
+  const filteredMarkets = markets
+    .filter((m) => {
+      if (!selectedCity) return true
+      return (
+        m.city?.toLowerCase().includes(selectedCity.toLowerCase()) ||
+        m.address?.toLowerCase().includes(selectedCity.toLowerCase())
+      )
+    })
+    .map((m) => {
+      if (!userLocation) return m
+      const [mLat, mLng] = getMarketCoordinates(m)
+      const distance = calculateHaversineDistance(userLocation.lat, userLocation.lng, mLat, mLng)
+      return { ...m, distance }
+    })
+    .sort((a, b) => {
+      if (userLocation && a.distance !== undefined && b.distance !== undefined) {
+        return a.distance - b.distance
+      }
+      return 0
+    })
 
   return (
     <PageContainer embedded={embedded}>
@@ -104,6 +157,39 @@ export default function CustomerMarkets({ embedded = false }) {
                   Filter
                 </Button>
               </form>
+
+              {/* Geolocation Button & Status */}
+              <div className="flex flex-wrap justify-center items-center gap-2 pt-1 text-xs">
+                {userLocation ? (
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/30 text-white font-medium text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      Sorted by nearest to your location
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearLocation}
+                      className="ml-1 text-white/80 hover:text-white underline text-[11px] flex items-center gap-0.5"
+                    >
+                      <X className="size-3" /> Clear
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    disabled={locating}
+                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm text-xs font-semibold h-9 px-4 rounded-xl gap-1.5 transition-colors shadow-sm"
+                  >
+                    {locating ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Navigation className="size-3.5" />
+                    )}
+                    {locating ? "Acquiring Location..." : "Use My Current Location"}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -120,18 +206,38 @@ export default function CustomerMarkets({ embedded = false }) {
                 Click any marker to view market address, operating days, and meet participating farmers.
               </p>
             </div>
-            <Badge
-              variant="secondary"
-              className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs rounded-full px-3 py-1"
-            >
-              {filteredMarkets.length} Markets Located
-            </Badge>
+            <div className="flex items-center gap-2">
+              {!userLocation && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUseCurrentLocation}
+                  disabled={locating}
+                  className="h-8 text-xs rounded-full gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-semibold"
+                >
+                  {locating ? (
+                    <Loader2 className="size-3 animate-spin text-emerald-600" />
+                  ) : (
+                    <Navigation className="size-3 text-emerald-600" />
+                  )}
+                  {locating ? "Locating..." : "Use My Location"}
+                </Button>
+              )}
+              <Badge
+                variant="secondary"
+                className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs rounded-full px-3 py-1"
+              >
+                {filteredMarkets.length} Markets Located
+              </Badge>
+            </div>
           </div>
 
           <MarketsDiscoveryMap
             markets={filteredMarkets}
             selectedMarketId={selectedMarketId}
             onMarketSelect={(m) => setSelectedMarketId(m.id)}
+            userLocation={userLocation}
           />
         </div>
 
@@ -177,14 +283,27 @@ export default function CustomerMarkets({ embedded = false }) {
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <Badge
-                          variant="outline"
-                          className="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300 text-[10px] font-bold gap-1 px-2.5 py-0.5 rounded-full"
-                        >
-                          <MapPin className="size-3 text-emerald-600" />{" "}
-                          {m.city || "Karachi"}
-                        </Badge>
-                        <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold rounded-full">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300 text-[10px] font-bold gap-1 px-2.5 py-0.5 rounded-full"
+                          >
+                            <MapPin className="size-3 text-emerald-600" />{" "}
+                            {m.city || "Karachi"}
+                          </Badge>
+                          {m.distance !== undefined && (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-300 text-[10px] font-bold gap-1 px-2.5 py-0.5 rounded-full"
+                            >
+                              <Navigation className="size-3 text-blue-600" />
+                              {m.distance < 1
+                                ? `${Math.round(m.distance * 1000)} m away`
+                                : `${m.distance.toFixed(1)} km away`}
+                            </Badge>
+                          )}
+                        </div>
+                        <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold rounded-full shrink-0">
                           Open Season
                         </Badge>
                       </div>

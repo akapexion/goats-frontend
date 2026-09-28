@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 // Helper to determine coordinates (real coordinates or city-based fallback)
-function getMarketCoordinates(market) {
+export function getMarketCoordinates(market) {
   const lat = parseFloat(market.latitude)
   const lng = parseFloat(market.longitude)
   if (
@@ -38,6 +38,60 @@ function getMarketCoordinates(market) {
 
   // Default Karachi
   return [24.8607 + offsetLat, 67.0011 + offsetLng]
+}
+
+// Haversine formula to compute great-circle distance between two GPS coordinates in kilometers
+export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+// User Location Pin Icon
+function createUserPinIcon() {
+  return L.divIcon({
+    className: 'custom-user-location-pin',
+    html: `
+      <div style="
+        position: relative;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <div style="
+          position: absolute;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(37, 99, 235, 0.25);
+          border: 2px solid rgba(37, 99, 235, 0.5);
+          animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+        "></div>
+        <div style="
+          position: relative;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #2563eb;
+          border: 3px solid #ffffff;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+        "></div>
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  })
 }
 
 // Custom Marker Generator
@@ -77,6 +131,7 @@ export default function MarketsDiscoveryMap({
   markets = [],
   selectedMarketId = null,
   onMarketSelect,
+  userLocation = null,
   className = '',
 }) {
   const navigate = useNavigate()
@@ -97,7 +152,7 @@ export default function MarketsDiscoveryMap({
     }
 
     const map = L.map(mapContainerRef.current, {
-      center: [24.8607, 67.0011],
+      center: userLocation ? [userLocation.lat, userLocation.lng] : [24.8607, 67.0011],
       zoom: 11,
       scrollWheelZoom: true,
       zoomControl: true,
@@ -135,6 +190,29 @@ export default function MarketsDiscoveryMap({
     const markerGroup = []
     markersRef.current = {}
 
+    // Add User Current Location Marker if available
+    if (userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number') {
+      const userCoords = [userLocation.lat, userLocation.lng]
+      const userMarker = L.marker(userCoords, {
+        icon: createUserPinIcon(),
+        zIndexOffset: 1000,
+      }).addTo(map)
+
+      const userPopup = `
+        <div style="font-family: inherit; min-width: 180px; padding: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #1d4ed8; font-size: 13px;">
+            <span>Your Location</span>
+          </div>
+          <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">
+            Market distances are calculated from here
+          </p>
+        </div>
+      `
+      userMarker.bindPopup(userPopup)
+      userMarker.bindTooltip('<b>Your Current Location</b>', { direction: 'top', offset: [0, -16] })
+      markerGroup.push(userCoords)
+    }
+
     markets.forEach((m) => {
       const coords = getMarketCoordinates(m)
       const farmersCount = m.farmers_count ?? (m.farmers?.length || 1)
@@ -157,20 +235,26 @@ export default function MarketsDiscoveryMap({
           </div>
 
           <p style="font-size: 12px; color: #64748b; margin: 0 0 8px 0; display: flex; align-items: flex-start; gap: 4px;">
-            <span style="color: #059669; font-size: 13px;">📍</span>
             <span>${m.address || 'Central Community Ground'}</span>
           </p>
 
           <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 10px; font-size: 11px; color: #334155;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-              <span>🗓️ <b>Days:</b> ${m.open_days || 'Saturday, Sunday'}</span>
+              <span><b>Days:</b> ${m.open_days || 'Saturday, Sunday'}</span>
             </div>
             <div style="color: #64748b;">
-              ⏰ <b>Hours:</b> ${m.open_time && m.close_time ? `${m.open_time} - ${m.close_time}` : '08:00 AM - 02:00 PM'}
+               <b>Hours:</b> ${m.open_time && m.close_time ? `${m.open_time} - ${m.close_time}` : '08:00 AM - 02:00 PM'}
             </div>
             <div style="margin-top: 5px; color: #047857; font-weight: 600;">
-              👨‍🌾 ${farmersCount} Participating Farmers
+               ${farmersCount} Participating Farmers
             </div>
+            ${
+              m.distance !== undefined
+                ? `<div style="margin-top: 4px; color: #2563eb; font-weight: 600;">
+                     ${m.distance < 1 ? Math.round(m.distance * 1000) + ' m away' : m.distance.toFixed(1) + ' km away'}
+                  </div>`
+                : ''
+            }
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -180,7 +264,7 @@ export default function MarketsDiscoveryMap({
               data-market-id="${m.id}"
               style="width: 100%; background: #059669; color: #ffffff; border: none; font-weight: 600; font-size: 12px; padding: 7px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
             >
-              <span>👨‍🌾 Meet Participating Farmers</span>
+              <span>Meet Participating Farmers</span>
             </button>
             <div style="display: flex; gap: 6px;">
               <button
@@ -197,7 +281,7 @@ export default function MarketsDiscoveryMap({
                 rel="noopener noreferrer"
                 style="flex: 1; background: #ffffff; color: #2563eb; border: 1px solid #93c5fd; font-weight: 600; font-size: 11px; padding: 6px 10px; border-radius: 6px; text-decoration: none; text-align: center; display: inline-block;"
               >
-                Directions ↗
+                Directions 
               </a>
             </div>
           </div>
@@ -242,7 +326,7 @@ export default function MarketsDiscoveryMap({
       }
       markersRef.current = {}
     }
-  }, [markets, navigate, onMarketSelect])
+  }, [markets, navigate, onMarketSelect, userLocation?.lat, userLocation?.lng])
 
   // Handle external selection change
   useEffect(() => {
@@ -272,6 +356,22 @@ export default function MarketsDiscoveryMap({
 
         {/* Floating Quick Action Overlay */}
         <div className="absolute top-3 right-3 z-[400] flex gap-2">
+          {userLocation && (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                if (mapInstanceRef.current && userLocation) {
+                  mapInstanceRef.current.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 1.0 })
+                }
+              }}
+              className="h-8 text-xs bg-background/90 backdrop-blur-sm border shadow-sm font-semibold hover:bg-background text-blue-600 dark:text-blue-400"
+            >
+              <Navigation className="size-3 mr-1" />
+              My Location
+            </Button>
+          )}
           <Button
             type="button"
             size="sm"
@@ -301,11 +401,16 @@ export default function MarketsDiscoveryMap({
               <Store className="size-5" />
             </div>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h4 className="font-bold text-foreground text-sm md:text-base">{activeMarket.name}</h4>
                 {activeMarket.city && (
                   <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-300">
                     {activeMarket.city}
+                  </Badge>
+                )}
+                {activeMarket.distance !== undefined && (
+                  <Badge variant="outline" className="text-[10px] bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-300">
+                    📍 {activeMarket.distance < 1 ? `${Math.round(activeMarket.distance * 1000)} m` : `${activeMarket.distance.toFixed(1)} km`} away
                   </Badge>
                 )}
               </div>

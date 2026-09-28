@@ -7,6 +7,8 @@ import { Lock, LogIn, UserPlus, X, Eye, EyeOff, CheckCircle } from "lucide-react
 import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
+import { validateEmail, validatePassword, validateName, validatePhone } from '@/lib/validation'
+
 export default function LoginRequiredModal({
   isOpen,
   onClose,
@@ -34,6 +36,34 @@ export default function LoginRequiredModal({
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrors({})
+
+    const fieldErrors = {}
+    const emailErr = validateEmail(form.email)
+    if (emailErr) fieldErrors.email = [emailErr]
+
+    if (mode === 'login') {
+      const passErr = validatePassword(form.password, 6)
+      if (passErr) fieldErrors.password = [passErr]
+    } else {
+      const nameErr = validateName(form.name, 'Full Name')
+      if (nameErr) fieldErrors.name = [nameErr]
+
+      const passErr = validatePassword(form.password, 8)
+      if (passErr) fieldErrors.password = [passErr]
+
+      if (form.password !== form.password_confirmation) {
+        fieldErrors.password_confirmation = ['Passwords do not match.']
+      }
+
+      const phoneErr = validatePhone(form.phone)
+      if (phoneErr) fieldErrors.phone = [phoneErr]
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -42,11 +72,6 @@ export default function LoginRequiredModal({
         loggedUser = await login(form.email, form.password)
         toast.success(`Welcome back, ${loggedUser.name}!`)
       } else {
-        if (form.password !== form.password_confirmation) {
-          setErrors({ password_confirmation: ['Passwords do not match'] })
-          setLoading(false)
-          return
-        }
         loggedUser = await register(form)
         toast.success('Account created successfully!')
       }

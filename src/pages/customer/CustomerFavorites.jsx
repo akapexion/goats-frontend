@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AppLayout } from '@/components/AppLayout'
+import PageContainer from '@/components/PageContainer'
 import api from '@/lib/axios'
 import toast from 'react-hot-toast'
 import { Card, CardContent } from '@/components/ui/card'
@@ -41,7 +41,7 @@ export default function CustomerFavorites() {
   const markets  = favorites.filter((f) => f.favoritable_type?.includes('Market'))
 
   return (
-    <AppLayout>
+    <PageContainer>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Saved Bookmarks & Locations</h1>
@@ -183,6 +183,6 @@ export default function CustomerFavorites() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </PageContainer>
   )
 }

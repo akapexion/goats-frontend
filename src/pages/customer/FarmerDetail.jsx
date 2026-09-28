@@ -13,6 +13,8 @@ import { MapPin, Clock, Star, ShoppingCart, Heart, ArrowLeft, Leaf, Package, Ext
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { X, Plus, Minus } from 'lucide-react'
+import ReviewSubmitModal from '@/components/ReviewSubmitModal'
+import { validateFutureDate, validateRequired } from '@/lib/validation'
 
 function StarDisplay({ rating }) {
   return (
@@ -29,6 +31,7 @@ function OrderModal({ farmer, products, onClose, onSubmit, loading }) {
   const [pickupDate, setPickupDate] = useState('')
   const [pickupTime, setPickupTime] = useState('')
   const [note, setNote] = useState('')
+  const [errors, setErrors] = useState({})
   const today = new Date().toISOString().split('T')[0]
 
   const setQty = (productId, qty) => {
@@ -49,10 +52,24 @@ function OrderModal({ farmer, products, onClose, onSubmit, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setErrors({})
     if (cartItems.length === 0) {
       toast.error('Add at least one product to your order')
       return
     }
+
+    const fieldErrors = {}
+    const dateErr = validateFutureDate(pickupDate, 'Pickup Date')
+    if (dateErr) fieldErrors.pickupDate = dateErr
+
+    const timeErr = validateRequired(pickupTime, 'Pickup Time')
+    if (timeErr) fieldErrors.pickupTime = timeErr
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     onSubmit({
       farmer_profile_id: farmer.id,
       pickup_date: pickupDate,
@@ -103,10 +120,12 @@ function OrderModal({ farmer, products, onClose, onSubmit, loading }) {
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Pickup Date *</Label>
                 <Input type="date" min={today} value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} required />
+                {errors.pickupDate && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupDate}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Pickup Time *</Label>
                 <Input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} required />
+                {errors.pickupTime && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupTime}</p>}
               </div>
             </div>
 
@@ -146,6 +165,7 @@ export default function FarmerDetail() {
   const [favoriteId, setFavoriteId] = useState(null)
   const [showOrder, setShowOrder] = useState(false)
   const [ordering, setOrdering] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [loginModalMessage, setLoginModalMessage] = useState('')
 
@@ -374,9 +394,32 @@ export default function FarmerDetail() {
               )}
             </div>
 
-            {reviews.length > 0 && (
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold">Customer Reviews ({reviews.length})</h2>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (!user) {
+                      setLoginModalMessage("Please sign in to write a review.")
+                      setShowLoginModal(true)
+                    } else {
+                      setShowReviewModal(true)
+                    }
+                  }}
+                  className="text-xs h-8 gap-1.5"
+                >
+                  <Star className="size-3.5 text-amber-500 fill-amber-500" />
+                  Write a Review
+                </Button>
+              </div>
+
+              {reviews.length === 0 ? (
+                <Card className="p-6 text-center text-muted-foreground border">
+                  <p className="text-sm">No reviews yet for this farmer. Be the first to share your experience!</p>
+                </Card>
+              ) : (
                 <div className="space-y-3">
                   {reviews.map((r) => (
                     <Card key={r.id} className="border shadow-sm">
@@ -396,8 +439,8 @@ export default function FarmerDetail() {
                     </Card>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
       </div>
@@ -417,6 +460,15 @@ export default function FarmerDetail() {
         onClose={() => setShowLoginModal(false)}
         title="Login Required"
         message={loginModalMessage}
+      />
+
+      <ReviewSubmitModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onSuccess={loadData}
+        farmerProfileId={id}
+        targetTitle={`Review ${farmer?.stall_name || 'Farmer'}`}
+        targetSubtitle={farmer?.stall_name}
       />
     </PageContainer>
   )

@@ -16,6 +16,8 @@ import { Link } from 'react-router-dom'
 
 const statusColor = { available: 'default', sold_out: 'secondary', hidden: 'outline' }
 
+import { validateName, validateRequired, validatePrice, validateStock } from '@/lib/validation'
+
 function ProductForm({ initial, categories, markets, onSave, onCancel, loading }) {
   const [form, setForm] = useState(
     initial
@@ -32,11 +34,36 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
       : { name: '', category_id: '', market_id: '', description: '', price: '', unit: 'kg', stock_quantity: '', status: 'available' }
   )
   const [image, setImage] = useState(null)
+  const [errors, setErrors] = useState({})
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const set = (k) => (e) => {
+    setForm({ ...form, [k]: e.target.value })
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: null }))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setErrors({})
+
+    const fieldErrors = {}
+    const nameErr = validateName(form.name, 'Product Name')
+    if (nameErr) fieldErrors.name = nameErr
+
+    if (!form.category_id) fieldErrors.category_id = 'Please select a category.'
+
+    const priceErr = validatePrice(form.price)
+    if (priceErr) fieldErrors.price = priceErr
+
+    if (!form.unit || !form.unit.trim()) fieldErrors.unit = 'Unit type is required.'
+
+    const stockErr = validateStock(form.stock_quantity)
+    if (stockErr) fieldErrors.stock_quantity = stockErr
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     const fd = new FormData()
     Object.entries(form).forEach(([k, v]) => { if (v !== '') fd.append(k, v) })
     if (image) fd.append('image', image)
@@ -54,6 +81,7 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
           <div className="sm:col-span-2 space-y-1.5">
             <Label className="text-xs font-semibold">Product Name *</Label>
             <Input value={form.name} onChange={set('name')} required placeholder="e.g. Organic Fresh Tomatoes" />
+            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -69,6 +97,7 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+            {errors.category_id && <p className="text-xs text-destructive mt-1">{errors.category_id}</p>}
             {categories.length === 0 && (
               <p className="text-[11px] text-amber-600">No categories added yet.</p>
             )}
@@ -105,16 +134,19 @@ function ProductForm({ initial, categories, markets, onSave, onCancel, loading }
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Price ($) *</Label>
             <Input type="number" step="0.01" min="0" value={form.price} onChange={set('price')} required placeholder="0.00" />
+            {errors.price && <p className="text-xs text-destructive mt-1">{errors.price}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Unit Type *</Label>
             <Input value={form.unit} onChange={set('unit')} required placeholder="e.g. KG, Dozen, Bunch, Lb" />
+            {errors.unit && <p className="text-xs text-destructive mt-1">{errors.unit}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Stock Quantity *</Label>
             <Input type="number" min="0" value={form.stock_quantity} onChange={set('stock_quantity')} required placeholder="0" />
+            {errors.stock_quantity && <p className="text-xs text-destructive mt-1">{errors.stock_quantity}</p>}
           </div>
 
           <div className="space-y-1.5">

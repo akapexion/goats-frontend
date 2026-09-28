@@ -20,9 +20,9 @@ import {
   Leaf,
   ChevronDown,
   Sun,
-  Moon,
-} from "lucide-react"
+  Moon} from 'lucide-react'
 import { useState, useRef, useEffect } from "react"
+import NotificationBell from "@/components/NotificationBell"
 
 const navItems = {
   admin: [
@@ -43,11 +43,10 @@ const navItems = {
     { label: "Reviews", href: "/farmer/reviews", icon: Star },
   ],
   customer: [
-    { label: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
-    { label: "Products", href: "/customer/products", icon: Package },
-    { label: "Farmers", href: "/customer/farmers", icon: Leaf },
-    { label: "Markets", href: "/customer/markets", icon: Store },
-    { label: "My Orders", href: "/customer/orders", icon: ShoppingCart },
+    { label: "Products", href: "/products", icon: Package },
+    { label: "Farmers", href: "/farmers", icon: Leaf },
+    { label: "Markets", href: "/markets", icon: Store },
+    { label: "My Orders", href: "/orders", icon: ShoppingCart },
     { label: "Favorites", href: "/customer/favorites", icon: Heart },
   ],
 }
@@ -204,6 +203,8 @@ export function AppLayout({ children }) {
           </button>
 
           <div className="flex-1" />
+
+          {user?.role === "admin" && <NotificationBell />}
 
           <button
             onClick={toggleTheme}

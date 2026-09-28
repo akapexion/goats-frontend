@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AppLayout } from '@/components/AppLayout'
+import PageContainer from '@/components/PageContainer'
 import api from '@/lib/axios'
 import toast from 'react-hot-toast'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Star, X, ChevronDown, ChevronUp, RotateCcw, Edit, ShoppingCart, Calendar, Clock, MapPin, Store } from 'lucide-react'
+
+import { validateRating, validateFutureDate, validateRequired } from '@/lib/validation'
 
 function StarRating({ value, onChange }) {
   const [hovered, setHovered] = useState(0)
@@ -37,17 +39,30 @@ function ReviewForm({ order, onClose, onSuccess }) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!rating) { toast.error('Please select a rating'); return }
+    setErrors({})
+
+    const ratingErr = validateRating(rating)
+    if (ratingErr) {
+      setErrors({ rating: ratingErr })
+      return
+    }
+
+    if (comment.length > 1000) {
+      setErrors({ comment: 'Comment cannot exceed 1000 characters.' })
+      return
+    }
+
     setSaving(true)
     try {
       await api.post('/customer/reviews', {
         farmer_profile_id: order.farmer_profile_id,
         order_id: order.id,
         rating,
-        comment,
+        comment: comment.trim() || null,
       })
       toast.success('Review submitted successfully!')
       onSuccess()
@@ -74,17 +89,26 @@ function ReviewForm({ order, onClose, onSuccess }) {
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-semibold">Rating *</Label>
-              <StarRating value={rating} onChange={setRating} />
+              <StarRating value={rating} onChange={(val) => {
+                setRating(val)
+                if (errors.rating) setErrors((prev) => ({ ...prev, rating: null }))
+              }} />
+              {errors.rating && <p className="text-xs text-destructive mt-1">{errors.rating}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">Comment (optional)</Label>
+              <div className="flex justify-between items-center">
+                <Label className="text-xs font-semibold">Comment (optional)</Label>
+                <span className="text-[11px] text-muted-foreground">{comment.length} / 1000</span>
+              </div>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
+                maxLength={1000}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
                 placeholder="Share your experience with this farmer..."
               />
+              {errors.comment && <p className="text-xs text-destructive mt-1">{errors.comment}</p>}
             </div>
             <div className="flex gap-2 pt-2">
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
@@ -104,10 +128,25 @@ function ModifyOrderModal({ order, onClose, onSuccess }) {
   const [pickupTime, setPickupTime] = useState(order.pickup_time || '')
   const [note, setNote] = useState(order.note || '')
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
   const today = new Date().toISOString().split('T')[0]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setErrors({})
+
+    const fieldErrors = {}
+    const dateErr = validateFutureDate(pickupDate, 'Pickup Date')
+    if (dateErr) fieldErrors.pickupDate = dateErr
+
+    const timeErr = validateRequired(pickupTime, 'Pickup Time')
+    if (timeErr) fieldErrors.pickupTime = timeErr
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     setSaving(true)
     try {
       await api.put(`/customer/orders/${order.id}`, {
@@ -144,6 +183,7 @@ function ModifyOrderModal({ order, onClose, onSuccess }) {
                   onChange={(e) => setPickupDate(e.target.value)}
                   required
                 />
+                {errors.pickupDate && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupDate}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Pickup Time *</Label>
@@ -153,6 +193,7 @@ function ModifyOrderModal({ order, onClose, onSuccess }) {
                   onChange={(e) => setPickupTime(e.target.value)}
                   required
                 />
+                {errors.pickupTime && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupTime}</p>}
               </div>
             </div>
 
@@ -333,7 +374,7 @@ export default function CustomerOrders() {
   }
 
   return (
-    <AppLayout>
+    <PageContainer>
       <div className="space-y-6 max-w-4xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold">My Pre-Orders & History</h1>
@@ -384,6 +425,6 @@ export default function CustomerOrders() {
           onSuccess={load}
         />
       )}
-    </AppLayout>
+    </PageContainer>
   )
 }

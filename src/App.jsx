@@ -58,6 +58,7 @@ function AppRoutes() {
       <Route path="/markets" element={<CustomerMarkets />} />
       <Route path="/markets/:id" element={<MarketDetail />} />
       <Route path="/farmers" element={<CustomerFarmers />} />
+      <Route path="/orders" element={<CustomerOrders />} />
       <Route path="/farmers/:id" element={<FarmerDetail />} />
       <Route path="/products" element={<CustomerProducts />} />
       <Route path="/products/:id" element={<ProductDetail />} />
@@ -82,15 +83,15 @@ function AppRoutes() {
       </Route>
 
       <Route element={<RequireAuth role="customer" />}>
-        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
-        <Route path="/customer/products" element={<CustomerProducts />} />
-        <Route path="/customer/products/:id" element={<ProductDetail />} />
-        <Route path="/customer/farmers" element={<CustomerFarmers />} />
-        <Route path="/customer/farmers/:id" element={<FarmerDetail />} />
-        <Route path="/customer/markets" element={<CustomerMarkets />} />
-        <Route path="/customer/markets/:id" element={<MarketDetail />} />
+        <Route path="/customer/dashboard" element={<Navigate to="/" replace />} />
         <Route path="/customer/orders" element={<CustomerOrders />} />
         <Route path="/customer/favorites" element={<CustomerFavorites />} />
+        <Route path="/customer/products" element={<Navigate to="/products" replace />} />
+        <Route path="/customer/products/:id" element={<Navigate to="/products" replace />} />
+        <Route path="/customer/farmers" element={<Navigate to="/farmers" replace />} />
+        <Route path="/customer/farmers/:id" element={<Navigate to="/farmers" replace />} />
+        <Route path="/customer/markets" element={<Navigate to="/markets" replace />} />
+        <Route path="/customer/markets/:id" element={<Navigate to="/markets" replace />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

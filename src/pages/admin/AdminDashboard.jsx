@@ -2,21 +2,43 @@ import { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import api from '@/lib/axios'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Store, ShoppingCart, Package, Leaf, Tag, Star, BarChart2, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Users, Store, ShoppingCart, Package, Leaf, Tag, Star, BarChart2, ArrowRight, ShieldCheck, Bell, Clock, Check } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [notifications, setNotifications] = useState([])
+  const [notificationsLoading, setNotificationsLoading] = useState(true)
 
   useEffect(() => {
     api.get('/admin/dashboard')
       .then(({ data }) => setStats(data.stats))
       .catch(() => {})
       .finally(() => setLoading(false))
+
+    api.get('/notifications')
+      .then(({ data }) => setNotifications(data.data?.data || data.data || []))
+      .catch(() => {})
+      .finally(() => setNotificationsLoading(false))
   }, [])
+
+  const handleMarkAsRead = async (id, e) => {
+    if (e) e.stopPropagation()
+    try {
+      await api.post(`/notifications/${id}/read`)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+      )
+    } catch {
+      toast.error('Failed to mark notification as read')
+    }
+  }
 
   const s = stats || { total_users: 0, total_farmers: 0, total_customers: 0, total_markets: 0, total_orders: 0 }
   const cards = [
@@ -95,6 +117,133 @@ export default function AdminDashboard() {
                   </Card>
                 ))}
           </div>
+        </div>
+
+        {/* Recent Order Notifications Module */}
+        <div data-aos="fade-up">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold">Recent Order Notifications</h2>
+              {notifications.filter((n) => !n.read_at).length > 0 && (
+                <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                  {notifications.filter((n) => !n.read_at).length} unread
+                </Badge>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/reports')}
+              className="text-xs text-primary font-semibold hover:bg-primary/10 gap-1 h-8"
+            >
+              View All Orders <ArrowRight className="size-3" />
+            </Button>
+          </div>
+
+          <Card className="backdrop-blur-md bg-card/80 border shadow-md overflow-hidden">
+            {notificationsLoading ? (
+              <CardContent className="p-6 space-y-3">
+                <Skeleton className="h-14 w-full rounded-xl" />
+                <Skeleton className="h-14 w-full rounded-xl" />
+              </CardContent>
+            ) : notifications.length === 0 ? (
+              <CardContent className="py-10 text-center text-muted-foreground space-y-2">
+                <Bell className="size-8 mx-auto opacity-30" />
+                <p className="text-xs font-medium">No order notifications received yet. System alerts will appear here when customers place orders.</p>
+              </CardContent>
+            ) : (
+              <div className="divide-y divide-border/60">
+                {notifications.slice(0, 5).map((n) => {
+                  const data = n.data || {}
+                  const isUnread = !n.read_at
+                  const timeFormatted = data.placed_at
+                    ? new Date(data.placed_at).toLocaleString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : ''
+
+                  return (
+                    <div
+                      key={n.id}
+                      className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
+                        isUnread ? 'bg-primary/5' : 'hover:bg-accent/40'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${
+                            isUnread
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                              : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          <ShoppingCart className="size-5" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-sm text-foreground">
+                              Order #{data.order_id || '—'}
+                            </span>
+                            {isUnread ? (
+                              <Badge className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0 rounded-full">
+                                New
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                                Read
+                              </Badge>
+                            )}
+                            {data.total_amount !== undefined && (
+                              <span className="font-extrabold text-sm text-emerald-600 dark:text-emerald-400">
+                                ${Number(data.total_amount).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-foreground/80">
+                            Customer: <span className="font-semibold">{data.customer_name || 'Customer'}</span>
+                            {data.customer_email && ` (${data.customer_email})`}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground pt-0.5">
+                            {timeFormatted && <span>Placed: {timeFormatted}</span>}
+                            {data.pickup_date && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="size-3" />
+                                Pickup: {data.pickup_date} {data.pickup_time ? `(${data.pickup_time})` : ''}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:self-center pl-13 sm:pl-0">
+                        {isUnread && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => handleMarkAsRead(n.id, e)}
+                            className="h-8 text-xs rounded-xl gap-1"
+                          >
+                            <Check className="size-3 text-emerald-600" />
+                            Mark Read
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          onClick={() => navigate('/admin/reports')}
+                          className="h-8 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          Inspect Order
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
         </div>
 
         <div data-aos="fade-up">

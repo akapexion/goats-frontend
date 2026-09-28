@@ -26,6 +26,8 @@ function MarketLinkLogo({ size = 36, className = '' }) {
   )
 }
 
+import { validateName, validateEmail, validatePassword, validatePhone } from '@/lib/validation'
+
 export default function RegisterPage() {
   const { register } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -48,6 +50,29 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrors({})
+
+    const fieldErrors = {}
+    const nameErr = validateName(form.name, "Full Name")
+    if (nameErr) fieldErrors.name = [nameErr]
+
+    const emailErr = validateEmail(form.email)
+    if (emailErr) fieldErrors.email = [emailErr]
+
+    const passErr = validatePassword(form.password, 8)
+    if (passErr) fieldErrors.password = [passErr]
+
+    if (form.password !== form.password_confirmation) {
+      fieldErrors.password_confirmation = ["Passwords do not match."]
+    }
+
+    const phoneErr = validatePhone(form.phone)
+    if (phoneErr) fieldErrors.phone = [phoneErr]
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     setLoading(true)
     try {
       const user = await register(form)
@@ -200,6 +225,11 @@ export default function RegisterPage() {
                     }
                     required
                   />
+                  {errors.password_confirmation && (
+                    <p className="text-xs text-destructive">
+                      {errors.password_confirmation[0]}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
@@ -210,6 +240,11 @@ export default function RegisterPage() {
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   />
+                  {errors.phone && (
+                    <p className="text-xs text-destructive">
+                      {errors.phone[0]}
+                    </p>
+                  )}
                 </div>
               </div>
 

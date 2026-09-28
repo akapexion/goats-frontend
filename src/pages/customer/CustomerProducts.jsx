@@ -160,11 +160,14 @@ function CartSidebar({ cart, products, onRemove, onAdd, onClear, onCheckout }) {
   )
 }
 
+import { validateFutureDate, validateRequired } from '@/lib/validation'
+
 function CheckoutModal({ cart, products, onClose, onSubmit, loading }) {
   const cartEntries = Object.entries(cart).filter(([, q]) => q > 0)
   const [pickupDate, setPickupDate] = useState('')
   const [pickupTime, setPickupTime] = useState('')
   const [note, setNote] = useState('')
+  const [errors, setErrors] = useState({})
   const today = new Date().toISOString().split('T')[0]
 
   const total = cartEntries.reduce((sum, [pid, qty]) => {
@@ -185,10 +188,30 @@ function CheckoutModal({ cart, products, onClose, onSubmit, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setErrors({})
+
     if (multipleFarmers) {
       toast.error('All items must be from the same farmer. Please adjust your cart.')
       return
     }
+
+    if (cartEntries.length === 0) {
+      toast.error('Your cart is empty.')
+      return
+    }
+
+    const fieldErrors = {}
+    const dateErr = validateFutureDate(pickupDate, 'Pickup Date')
+    if (dateErr) fieldErrors.pickupDate = dateErr
+
+    const timeErr = validateRequired(pickupTime, 'Pickup Time')
+    if (timeErr) fieldErrors.pickupTime = timeErr
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     const [farmerId, group] = Object.entries(farmerGroups)[0]
     onSubmit({
       farmer_profile_id: Number(farmerId),
@@ -235,10 +258,12 @@ function CheckoutModal({ cart, products, onClose, onSubmit, loading }) {
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Pickup Date *</Label>
                 <Input type="date" min={today} value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} required />
+                {errors.pickupDate && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupDate}</p>}
               </div>
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Pickup Time *</Label>
                 <Input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} required />
+                {errors.pickupTime && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupTime}</p>}
               </div>
             </div>
 

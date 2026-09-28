@@ -14,6 +14,19 @@ import { Input } from "@/components/ui/input"
 import { Package, Store, Leaf, MapPin, Calendar, Clock, ShoppingCart, Heart, ArrowLeft, Plus, Minus, CheckCircle, AlertTriangle, XCircle, Star } from "lucide-react"
 import { getProductImageUrl, getCategoryFallback } from "@/lib/imageUtils"
 
+import ReviewSubmitModal from '@/components/ReviewSubmitModal'
+import { validateFutureDate, validateRequired, validateQuantity } from '@/lib/validation'
+
+function StarDisplay({ rating }) {
+  return (
+    <div className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star key={i} className={`size-3.5 ${i < rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />
+      ))}
+    </div>
+  )
+}
+
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -32,6 +45,10 @@ export default function ProductDetail() {
   const [pickupTime, setPickupTime] = useState("")
   const [note, setNote] = useState("")
   const [ordering, setOrdering] = useState(false)
+  const [checkoutErrors, setCheckoutErrors] = useState({})
+
+  const [reviews, setReviews] = useState([])
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -48,6 +65,10 @@ export default function ProductDetail() {
       })
       .catch(() => toast.error("Failed to load product details"))
       .finally(() => setLoading(false))
+
+    api.get(`/products/${id}/reviews`)
+      .then(({ data }) => setReviews(data.data?.data || data.data || []))
+      .catch(() => {})
   }
 
   const checkFavorite = () => {
@@ -107,7 +128,23 @@ export default function ProductDetail() {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault()
+    setCheckoutErrors({})
     if (!product || !product.farmer) return
+
+    const fieldErrors = {}
+    const dateErr = validateFutureDate(pickupDate, 'Pickup Date')
+    if (dateErr) fieldErrors.pickupDate = dateErr
+
+    const timeErr = validateRequired(pickupTime, 'Pickup Time')
+    if (timeErr) fieldErrors.pickupTime = timeErr
+
+    const qtyErr = validateQuantity(quantity, product.stock_quantity)
+    if (qtyErr) fieldErrors.quantity = qtyErr
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setCheckoutErrors(fieldErrors)
+      return
+    }
 
     setOrdering(true)
     try {
@@ -324,6 +361,65 @@ export default function ProductDetail() {
             )}
           </div>
         </div>
+        {/* Customer Reviews Section */}
+        <div className="space-y-4 pt-6 border-t">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Star className="size-5 text-amber-500 fill-amber-500" />
+                Customer Reviews ({reviews.length})
+              </h2>
+              {reviews.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Average Rating: {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)} / 5 Stars
+                </p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (!user) {
+                  setLoginModalMessage("Please sign in to write a product review.")
+                  setShowLoginModal(true)
+                } else {
+                  setShowReviewModal(true)
+                }
+              }}
+              className="text-xs h-8 gap-1.5"
+            >
+              <Star className="size-3.5 text-amber-500 fill-amber-500" />
+              Write a Review
+            </Button>
+          </div>
+
+          {reviews.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground border">
+              <p className="text-sm">No customer reviews yet for this product. Be the first to share your thoughts!</p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {reviews.map((r) => (
+                <Card key={r.id} className="border shadow-sm">
+                  <CardContent className="pt-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-bold">{r.customer?.name || "Customer"}</p>
+                      <StarDisplay rating={r.rating} />
+                    </div>
+                    {r.comment && <p className="text-sm text-muted-foreground">{r.comment}</p>}
+                    <p className="text-[11px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                    {r.farmer_reply && (
+                      <div className="bg-muted/40 rounded-lg p-2.5 border text-xs space-y-1">
+                        <p className="font-bold text-primary">Farmer Response:</p>
+                        <p className="text-muted-foreground">{r.farmer_reply}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {showCheckout && (
@@ -352,18 +448,26 @@ export default function ProductDetail() {
                       type="date"
                       min={today}
                       value={pickupDate}
-                      onChange={(e) => setPickupDate(e.target.value)}
+                      onChange={(e) => {
+                        setPickupDate(e.target.value)
+                        if (checkoutErrors.pickupDate) setCheckoutErrors(prev => ({ ...prev, pickupDate: null }))
+                      }}
                       required
                     />
+                    {checkoutErrors.pickupDate && <p className="text-[11px] text-destructive mt-0.5">{checkoutErrors.pickupDate}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">Pickup Time *</Label>
                     <Input
                       type="time"
                       value={pickupTime}
-                      onChange={(e) => setPickupTime(e.target.value)}
+                      onChange={(e) => {
+                        setPickupTime(e.target.value)
+                        if (checkoutErrors.pickupTime) setCheckoutErrors(prev => ({ ...prev, pickupTime: null }))
+                      }}
                       required
                     />
+                    {checkoutErrors.pickupTime && <p className="text-[11px] text-destructive mt-0.5">{checkoutErrors.pickupTime}</p>}
                   </div>
                 </div>
 
@@ -397,6 +501,16 @@ export default function ProductDetail() {
         onClose={() => setShowLoginModal(false)}
         title="Login Required"
         message={loginModalMessage}
+      />
+
+      <ReviewSubmitModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onSuccess={loadProduct}
+        farmerProfileId={product?.farmer_profile_id}
+        productId={id}
+        targetTitle={`Review ${product?.name || 'Product'}`}
+        targetSubtitle={`${product?.name} from ${farmer?.stall_name || 'Farmer'}`}
       />
     </PageContainer>
   )

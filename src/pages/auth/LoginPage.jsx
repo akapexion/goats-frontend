@@ -20,6 +20,8 @@ function MarketLinkLogo({ size = 36, className = '' }) {
   )
 }
 
+import { validateEmail, validatePassword } from '@/lib/validation'
+
 export default function LoginPage() {
   const { login } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -32,6 +34,18 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrors({})
+
+    const fieldErrors = {}
+    const emailErr = validateEmail(form.email)
+    if (emailErr) fieldErrors.email = [emailErr]
+    const passErr = validatePassword(form.password, 6)
+    if (passErr) fieldErrors.password = [passErr]
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     setLoading(true)
     try {
       const user = await login(form.email, form.password)

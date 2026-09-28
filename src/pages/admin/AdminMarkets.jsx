@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Pencil, Trash2, X, MapPin, Navigation, Compass } from 'lucide-react'
 import LocationPickerMap from '@/components/LocationPickerMap'
 
+import { validateName, validateRequired, validateCoordinates } from '@/lib/validation'
+
 function MarketForm({ initial, onSave, onCancel, loading }) {
   const [form, setForm] = useState(() => ({
     name: initial?.name || '',
@@ -22,6 +24,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
     open_time: initial?.open_time || '',
     close_time: initial?.close_time || '',
   }))
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (initial) {
@@ -35,10 +38,14 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
         open_time: initial.open_time || '',
         close_time: initial.close_time || '',
       })
+      setErrors({})
     }
   }, [initial])
 
-  const set = (k) => (e) => setForm((prev) => ({ ...prev, [k]: e.target.value }))
+  const set = (k) => (e) => {
+    setForm((prev) => ({ ...prev, [k]: e.target.value }))
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: null }))
+  }
 
   const handleLocationSelect = (lat, lng) => {
     setForm((prev) => ({
@@ -46,10 +53,30 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
       latitude: lat,
       longitude: lng,
     }))
+    setErrors((prev) => ({ ...prev, latitude: null, longitude: null }))
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setErrors({})
+
+    const fieldErrors = {}
+    const nameErr = validateName(form.name, 'Market Name')
+    if (nameErr) fieldErrors.name = nameErr
+
+    const addressErr = validateRequired(form.address, 'Address')
+    if (addressErr) fieldErrors.address = addressErr
+    else if (form.address.trim().length < 5) fieldErrors.address = 'Address must be at least 5 characters.'
+
+    const coordErrors = validateCoordinates(form.latitude, form.longitude)
+    if (coordErrors.latitude) fieldErrors.latitude = coordErrors.latitude
+    if (coordErrors.longitude) fieldErrors.longitude = coordErrors.longitude
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     onSave(form)
   }
 
@@ -95,6 +122,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
                     placeholder="e.g. Green Valley Farmers Market"
                     className="h-10 text-sm"
                   />
+                  {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
                 </div>
 
                 <div className="space-y-1.5 sm:col-span-2">
@@ -106,6 +134,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
                     placeholder="e.g. Karachi, Lahore, Islamabad"
                     className="h-10 text-sm"
                   />
+                  {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
                 </div>
 
                 <div className="space-y-1.5 sm:col-span-2">
@@ -118,6 +147,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
                     placeholder="e.g. Block 5, Clifton, Marine Drive"
                     className="h-10 text-sm"
                   />
+                  {errors.address && <p className="text-xs text-destructive mt-1">{errors.address}</p>}
                 </div>
               </div>
 
@@ -144,6 +174,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
                       placeholder="e.g. 24.8607"
                       className="h-9 font-mono text-xs bg-background"
                     />
+                    {errors.latitude && <p className="text-[10px] text-destructive mt-0.5">{errors.latitude}</p>}
                   </div>
 
                   <div className="space-y-1">
@@ -158,6 +189,7 @@ function MarketForm({ initial, onSave, onCancel, loading }) {
                       placeholder="e.g. 67.0011"
                       className="h-9 font-mono text-xs bg-background"
                     />
+                    {errors.longitude && <p className="text-[10px] text-destructive mt-0.5">{errors.longitude}</p>}
                   </div>
                 </div>
               </div>

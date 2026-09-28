@@ -16,11 +16,8 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/customer/dashboard')
-      .then(({ data }) => setData(data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+    navigate('/', { replace: true })
+  }, [navigate])
 
   const statusColor = {
     placed: 'secondary', accepted: 'default', declined: 'destructive',

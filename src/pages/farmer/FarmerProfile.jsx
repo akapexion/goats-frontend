@@ -54,10 +54,27 @@ export default function FarmerProfile() {
 
   useEffect(() => { load() }, [])
 
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const [errors, setErrors] = useState({})
+
+  const set = (k) => (e) => {
+    setForm({ ...form, [k]: e.target.value })
+    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: null }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setErrors({})
+
+    const fieldErrors = {}
+    if (!form.stall_name || form.stall_name.trim().length < 2) {
+      fieldErrors.stall_name = 'Stall Name is required and must be at least 2 characters.'
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      return
+    }
+
     setSaving(true)
     try {
       const { data } = await api.put('/farmer/profile', form)
@@ -112,6 +129,7 @@ export default function FarmerProfile() {
                   onChange={set('stall_name')}
                   required
                 />
+                {errors.stall_name && <p className="text-xs text-destructive mt-1">{errors.stall_name}</p>}
               </div>
 
               <div className="space-y-2">

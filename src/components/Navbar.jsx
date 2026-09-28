@@ -43,7 +43,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <Link
-            to={user ? "/customer/favorites" : "/products"}
+            to={user ? "/customer/favorites" : "/login"}
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Wishlist"
           >
@@ -75,7 +75,7 @@ export default function Navbar() {
           {user ? (
             user.role === 'customer' ? (
               <div className="flex items-center gap-2">
-                <Link to="/customer/orders">
+                <Link to="/orders">
                   <Button size="sm" variant="outline" className="rounded-full font-semibold text-xs border-emerald-600/40 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950">
                     <Package className="size-3.5 mr-1" /> My Pre-Orders
                   </Button>
