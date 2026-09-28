@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom"
 import { useTheme } from "@/context/ThemeContext"
-import { Facebook, Instagram, Twitter, Sparkles, Send } from "lucide-react"
+import { AiOutlineFacebook } from "react-icons/ai";
+import { FaInstagram } from "react-icons/fa";
+import { CiTwitter } from "react-icons/ci";
+import { Sparkles } from "lucide-react";
 
 export default function Footer() {
   const { theme } = useTheme()
 
   return (
-    <footer className="bg-[#0B132B] text-slate-200 mt-auto border-t border-slate-800">
+    <footer className="bg-background/90 backdrop-blur-md text-slate-200 mt-auto border-t border-gray-600">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           {/* Brand Bio */}
@@ -14,11 +17,7 @@ export default function Footer() {
             <Link to="/" className="inline-block">
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
-                  <span className="size-3 rounded-full bg-emerald-500 inline-block" />
-                  MarketLink
-                </span>
-                <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded-full">
-                  eGreen Basket
+                  <img src="/logo-main.png" width={120} />
                 </span>
               </div>
             </Link>
@@ -27,13 +26,13 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a href="#" className="size-8 rounded-full bg-slate-800/80 hover:bg-emerald-600 hover:text-white flex items-center justify-center text-slate-400 transition-colors">
-                <Facebook className="size-4" />
+                <AiOutlineFacebook className="size-4" />
               </a>
               <a href="#" className="size-8 rounded-full bg-slate-800/80 hover:bg-emerald-600 hover:text-white flex items-center justify-center text-slate-400 transition-colors">
-                <Instagram className="size-4" />
+                <FaInstagram className="size-4" />
               </a>
               <a href="#" className="size-8 rounded-full bg-slate-800/80 hover:bg-emerald-600 hover:text-white flex items-center justify-center text-slate-400 transition-colors">
-                <Twitter className="size-4" />
+                <CiTwitter className="size-4" />
               </a>
             </div>
           </div>
@@ -71,7 +70,7 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full border border-gray-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
               />
               <button
                 type="submit"
@@ -84,7 +83,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom copyright & floating AI button bar */}
-        <div className="border-t border-slate-800/80 pt-6 text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="border-t border-gray-600 pt-6 text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} MarketLink (eGreen Basket). All rights reserved.</p>
           <div className="flex items-center gap-6 text-slate-400 text-[11px]">
             <a href="#" className="hover:text-slate-200">SRS Architecture</a>

@@ -12,27 +12,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Search, ShoppingCart, Heart, X, Plus, Minus, Info, Filter, Store, Leaf, CheckCircle, AlertTriangle, Package } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import { getProductImageUrl, getCategoryFallback } from '@/lib/imageUtils'
 
 function ProductCard({ product, cartQty, onAdd, onRemove, onBookmark, onViewDetails }) {
   const isAvailable = product.status === 'available' && product.stock_quantity > 0
   const isLowStock = isAvailable && product.stock_quantity <= 5
+  const imageUrl = getProductImageUrl(product.image_path) || getCategoryFallback(product.category?.name)
 
   return (
     <Card className="flex flex-col justify-between backdrop-blur-md bg-card/80 border shadow-md hover:-translate-y-1 hover:border-primary hover:shadow-xl transition-all duration-300 overflow-hidden">
       <div>
         <div className="relative h-40 bg-accent/30 overflow-hidden">
-          {product.image_path ? (
-            <img
-              src={`http://localhost:8000/storage/${product.image_path}`}
-              alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground text-xs font-medium">
-              Fresh Produce
-            </div>
-          )}
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => { e.target.src = getCategoryFallback(product.category?.name) }}
+          />
           <div className="absolute top-2 right-2">
             <Badge variant={isAvailable ? (isLowStock ? "warning" : "default") : "destructive"} className="text-[10px] px-2 py-0.5">
               {isAvailable ? (isLowStock ? 'Low Stock' : 'Available') : 'Sold Out'}
@@ -329,11 +325,6 @@ export default function CustomerProducts({ embedded = false }) {
   }
 
   const addToCart = (product) => {
-    if (!user) {
-      setLoginModalMessage('Please sign in to place pre-orders.')
-      setShowLoginModal(true)
-      return
-    }
     setCart((prev) => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))
   }
 
@@ -361,7 +352,7 @@ export default function CustomerProducts({ embedded = false }) {
 
   const handleInitiateCheckout = () => {
     if (!user) {
-      setLoginModalMessage('Please sign in to place pre-orders.')
+      setLoginModalMessage('Please sign in or create an account to confirm your pre-order.')
       setShowLoginModal(true)
       return
     }
@@ -372,11 +363,10 @@ export default function CustomerProducts({ embedded = false }) {
     setOrdering(true)
     try {
       await api.post('/customer/orders', payload)
-      toast.success('Pre-order placed successfully!')
+      toast.success('Pre-order placed successfully! Check your orders on the web.')
       setCart({})
       setShowCheckout(false)
       fetchProducts()
-      navigate('/customer/orders')
     } catch (err) {
       const msgs = err.response?.data?.errors
       if (msgs) Object.values(msgs).flat().forEach((m) => toast.error(m))
@@ -535,7 +525,8 @@ export default function CustomerProducts({ embedded = false }) {
       <LoginRequiredModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        title="Login Required"
+        onSuccess={() => setShowCheckout(true)}
+        title="Authentication Required"
         message={loginModalMessage}
       />
     </PageContainer>

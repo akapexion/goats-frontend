@@ -100,15 +100,6 @@ function ProfileDropdown({ user, onLogout }) {
             </span>
           </div>
 
-          <Link
-            to={`/${user?.role}/dashboard`}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-accent transition-colors"
-          >
-            <LayoutDashboard className="size-4" />
-            Dashboard
-          </Link>
-
           {user?.role === "farmer" && (
             <Link
               to="/farmer/profile"
@@ -126,7 +117,7 @@ function ProfileDropdown({ user, onLogout }) {
                 setOpen(false);
                 onLogout();
               }}
-              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-white bg-destructive hover:bg-destructive/90 transition-colors rounded-b-xl cursor-pointer"
+              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-500 bg-red-500/10 transition-colors rounded-b-xl cursor-pointer"
             >
               <LogOut className="size-4" />
               Sign out
@@ -167,7 +158,7 @@ export function AppLayout({ children }) {
           <Link to="/">
             <div className="flex justify-center">
                <div> 
-                  <span className="font-extrabold text-lg tracking-tight leading-none text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-green-500 to-teal-600 dark:from-emerald-400 dark:to-teal-300"> Market<span className="text-foreground font-black">Link</span> </span>
+                  <img src="/logo-main.png" alt="MarketLink Logo" className="h-8" />
                 </div>
             </div>
           </Link>
@@ -190,16 +181,6 @@ export function AppLayout({ children }) {
             </Link>
           ))}
         </nav>
-
-        <div className="p-3 border-t shrink-0">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <LogOut className="size-4 shrink-0" />
-            Sign out
-          </button>
-        </div>
       </aside>
 
       {mobileOpen && (

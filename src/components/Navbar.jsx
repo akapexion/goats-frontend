@@ -2,10 +2,10 @@ import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sun, Moon, Heart, ShoppingBag } from "lucide-react"
+import { ArrowRight, Sun, Moon, Heart, ShoppingBag, Package, LogOut } from "lucide-react"
 
 export default function Navbar() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
 
@@ -15,11 +15,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          {theme === "dark" ? (
-            <img src="/logo-white.png" alt="MarketLink Logo" className="h-9 w-auto object-contain" />
-          ) : (
-            <img src="/logo.png" alt="MarketLink Logo" className="h-9 w-auto object-contain" />
-          )}
+            <img src="/logo-main.png" alt="MarketLink Logo" className="h-6" />
         </Link>
 
         {/* Center Pill Nav Bar matching references */}
@@ -49,7 +45,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {/* Wishlist Icon */}
           <Link
-            to={user ? "/customer/dashboard" : "/login"}
+            to={user ? "/customer/favorites" : "/products"}
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Wishlist"
           >
@@ -80,19 +76,36 @@ export default function Navbar() {
           </button>
 
           {user ? (
-            <Link to={`/${user.role}/dashboard`}>
-              <Button size="sm" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
-                Dashboard <ArrowRight className="size-4 ml-1" />
-              </Button>
-            </Link>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button size="sm" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm px-5">
-                  Login
+            user.role === 'customer' ? (
+              <div className="flex items-center gap-2">
+                <Link to="/customer/orders">
+                  <Button size="sm" variant="outline" className="rounded-full font-semibold text-xs border-emerald-600/40 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+                    <Package className="size-3.5 mr-1" /> My Pre-Orders
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={logout}
+                  className="rounded-full text-xs text-muted-foreground hover:text-foreground p-2"
+                  title="Log out"
+                >
+                  <LogOut className="size-4" />
+                </Button>
+              </div>
+            ) : (
+              <Link to={`/${user.role}/dashboard`}>
+                <Button size="sm" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+                  Dashboard <ArrowRight className="size-4 ml-1" />
                 </Button>
               </Link>
-            </>
+            )
+          ) : (
+            <Link to="/login">
+              <Button size="sm" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm px-5">
+                Login / Sign Up
+              </Button>
+            </Link>
           )}
         </div>
       </div>

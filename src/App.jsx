@@ -39,7 +39,10 @@ import HowItWorks from './pages/HowItWorks'
 
 function AuthRedirect() {
   const { user } = useAuth()
-  if (user) return <Navigate to={`/${user.role}/dashboard`} replace />
+  if (user) {
+    if (user.role === 'customer') return <Navigate to="/" replace />
+    return <Navigate to={`/${user.role}/dashboard`} replace />
+  }
   return null
 }
 

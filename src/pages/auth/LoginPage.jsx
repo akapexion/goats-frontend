@@ -36,7 +36,11 @@ export default function LoginPage() {
     try {
       const user = await login(form.email, form.password)
       toast.success(`Welcome back, ${user.name}!`)
-      navigate(`/${user.role}/dashboard`)
+      if (user.role === 'customer') {
+        navigate('/')
+      } else {
+        navigate(`/${user.role}/dashboard`)
+      }
     } catch (err) {
       const data = err.response?.data
       if (data?.errors) {
@@ -66,7 +70,6 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md my-12 animate-fade-in">
         <Card className="backdrop-blur-xl bg-card/90 dark:bg-card/85 border shadow-2xl hover:-translate-y-1 hover:border-primary hover:shadow-primary/10 transition-all duration-300">
           <CardHeader className="text-center pb-4 flex flex-col items-center">
-            <img src="/logo-white.png" width={50} />
             <CardTitle className="text-2xl font-bold">Welcome to MarketLink</CardTitle>
             <CardDescription>Sign in to manage your orders & market stall</CardDescription>
           </CardHeader>

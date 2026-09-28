@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Package, Store, Leaf, MapPin, Calendar, Clock, ShoppingCart, Heart, ArrowLeft, Plus, Minus, CheckCircle, AlertTriangle, XCircle, Star } from "lucide-react"
+import { getProductImageUrl, getCategoryFallback } from "@/lib/imageUtils"
 
 export default function ProductDetail() {
   const { id } = useParams()
@@ -179,19 +180,12 @@ export default function ProductDetail() {
           {/* Product Image & Stock Card */}
           <Card className="overflow-hidden border shadow-lg bg-card">
             <div className="relative h-72 sm:h-96 bg-accent/40 flex items-center justify-center">
-              {product.image_path ? (
-                <img
-                  src={`http://localhost:8000/storage/${product.image_path}`}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.target.style.display = 'none' }}
-                />
-              ) : (
-                <div className="text-center text-muted-foreground">
-                  <Package className="size-20 mx-auto opacity-20 mb-2" />
-                  <p className="text-sm font-medium">Fresh Farm Produce</p>
-                </div>
-              )}
+              <img
+                src={getProductImageUrl(product.image_path) || getCategoryFallback(product.category?.name)}
+                alt={product.name}
+                className="w-full h-full object-cover"
+                onError={(e) => { e.target.src = getCategoryFallback(product.category?.name) }}
+              />
               <div className="absolute top-4 right-4">
                 <Badge variant={isAvailable ? (isLowStock ? "warning" : "default") : "destructive"} className="px-3 py-1 text-xs shadow-md">
                   {isAvailable ? (isLowStock ? "Low Stock" : "In Stock") : "Currently Unavailable"}

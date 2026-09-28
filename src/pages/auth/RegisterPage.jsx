@@ -52,7 +52,11 @@ export default function RegisterPage() {
     try {
       const user = await register(form);
       toast.success("Account created successfully!");
-      navigate(`/${user.role}/dashboard`);
+      if (user.role === 'customer') {
+        navigate('/');
+      } else {
+        navigate(`/${user.role}/dashboard`);
+      }
     } catch (err) {
       const data = err.response?.data;
       if (data?.errors) {
@@ -83,7 +87,6 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-lg my-2 animate-fade-in">
         <Card className="backdrop-blur-xl bg-card/90 dark:bg-card/85 border shadow-2xl hover:-translate-y-1 hover:border-primary hover:shadow-primary/10 transition-all duration-300">
           <CardHeader className="text-center pb-4 flex flex-col items-center">
-            <img src="/logo-white.png" width={50} />
             <CardTitle className="text-2xl font-bold">
               Join the MarketLink Community
             </CardTitle>
@@ -126,7 +129,6 @@ export default function RegisterPage() {
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
-                    placeholder="John Doe"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     required
@@ -141,7 +143,6 @@ export default function RegisterPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
                     value={form.email}
                     onChange={(e) =>
                       setForm({ ...form, email: e.target.value })
@@ -210,7 +211,7 @@ export default function RegisterPage() {
                   <Label htmlFor="phone">Phone Number (optional)</Label>
                   <Input
                     id="phone"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+92 000000000"
                     value={form.phone}
                     onChange={(e) =>
                       setForm({ ...form, phone: e.target.value })
