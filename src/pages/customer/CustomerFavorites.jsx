@@ -1,44 +1,50 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import PageContainer from '@/components/PageContainer'
-import api from '@/lib/axios'
-import toast from 'react-hot-toast'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Heart, Trash2, Package, Leaf, Store, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
+import { useWishlist } from '@/context/WishlistContext'
 
 export default function CustomerFavorites() {
-  const [favorites, setFavorites] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const { wishlist, loading, removeFromWishlist, refreshWishlist } = useWishlist()
 
-  const load = () => {
-    setLoading(true)
-    api.get('/customer/favorites')
-      .then(({ data }) => setFavorites(data.data || []))
-      .catch(() => {
-        toast.error('Failed to load saved items')
-        setFavorites([])
-      })
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    refreshWishlist()
+  }, [refreshWishlist])
 
   const handleRemove = async (id) => {
-    try {
-      await api.delete(`/customer/favorites/${id}`)
-      toast.success('Removed from saved items')
-      load()
-    } catch {
-      toast.error('Failed to remove item')
-    }
+    await removeFromWishlist(id)
   }
 
-  const products = favorites.filter((f) => f.favoritable_type?.includes('Product'))
-  const farmers  = favorites.filter((f) => f.favoritable_type?.includes('FarmerProfile'))
-  const markets  = favorites.filter((f) => f.favoritable_type?.includes('Market'))
+  const products = wishlist.filter((f) => f.favoritable_type?.includes('Product'))
+  const farmers  = wishlist.filter((f) => f.favoritable_type?.includes('FarmerProfile'))
+  const markets  = wishlist.filter((f) => f.favoritable_type?.includes('Market'))
+
+  if (!user) {
+    return (
+      <PageContainer>
+        <div className="text-center py-20 bg-card rounded-2xl border shadow-sm space-y-4 max-w-md mx-auto my-12 p-8">
+          <Heart className="size-16 mx-auto opacity-30 text-rose-500" />
+          <h2 className="text-xl font-bold">Sign In to View Saved Items</h2>
+          <p className="text-xs text-muted-foreground">
+            Sign in to bookmark and track your favorite local farm products, markets, and farmer stalls.
+          </p>
+          <div className="pt-2">
+            <Link to="/login">
+              <Button size="sm" className="font-semibold px-6">
+                Sign In
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </PageContainer>
+    )
+  }
 
   return (
     <PageContainer>
@@ -54,7 +60,7 @@ export default function CustomerFavorites() {
               <Card key={i}><CardContent className="pt-6"><Skeleton className="h-32 w-full" /></CardContent></Card>
             ))}
           </div>
-        ) : favorites.length === 0 ? (
+        ) : wishlist.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Heart className="size-12 mx-auto mb-3 opacity-30 text-rose-500" />
             <p>Nothing saved yet. Browse markets, farmers, and products to bookmark items.</p>

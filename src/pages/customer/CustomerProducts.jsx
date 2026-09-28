@@ -11,115 +11,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Search, ShoppingCart, Heart, X, Plus, Minus, Info, Filter, Store, Leaf, CheckCircle, AlertTriangle, Package } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getProductImageUrl, getCategoryFallback } from '@/lib/imageUtils'
 
-function ProductCard({ product, cartQty, onAdd, onRemove, onBookmark, onViewDetails }) {
-  const isAvailable = product.status === 'available' && product.stock_quantity > 0
-  const isLowStock = isAvailable && product.stock_quantity <= 5
-  const imageUrl = getProductImageUrl(product.image_path) || getCategoryFallback(product.category?.name)
+import ProductCard from '@/components/ProductCard'
+import { useCart } from '@/context/CartContext'
 
-  return (
-    <Card className="flex flex-col justify-between backdrop-blur-md bg-card/80 border shadow-md hover:-translate-y-1 hover:border-primary hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div>
-        <div className="relative h-40 bg-accent/30 overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-            onError={(e) => { e.target.src = getCategoryFallback(product.category?.name) }}
-          />
-          <div className="absolute top-2 right-2">
-            <Badge variant={isAvailable ? (isLowStock ? "warning" : "default") : "destructive"} className="text-[10px] px-2 py-0.5">
-              {isAvailable ? (isLowStock ? 'Low Stock' : 'Available') : 'Sold Out'}
-            </Badge>
-          </div>
-        </div>
-
-        <CardHeader className="pb-1 pt-3">
-          <div className="flex items-start justify-between gap-1">
-            <CardTitle className="text-base font-bold leading-snug cursor-pointer hover:text-primary transition-colors" onClick={() => onViewDetails(product.id)}>
-              {product.name}
-            </CardTitle>
-          </div>
-          <CardDescription className="text-xs line-clamp-1">{product.category?.name || 'General'}</CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-2 text-xs">
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="font-extrabold text-base text-primary">${Number(product.price).toFixed(2)}</span>
-            <span className="text-muted-foreground font-medium">per {product.unit}</span>
-          </div>
-
-          <div className="space-y-1 text-muted-foreground pt-1 border-t">
-            <p className="flex items-center gap-1 text-foreground/90 font-medium truncate">
-              <Leaf className="size-3 text-emerald-500 shrink-0" /> {product.farmer?.stall_name || 'Local Farmer'}
-            </p>
-            {product.farmer?.market && (
-              <p className="flex items-center gap-1 text-xs truncate">
-                <Store className="size-3 text-primary shrink-0" /> {product.farmer.market.name}
-              </p>
-            )}
-            <p className={`flex items-center gap-1 font-semibold ${isAvailable ? (isLowStock ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400') : 'text-destructive'}`}>
-              {isAvailable ? (
-                <>
-                  {isLowStock ? <AlertTriangle className="size-3" /> : <CheckCircle className="size-3" />}
-                  {product.stock_quantity} {product.unit}s left
-                </>
-              ) : (
-                'Currently Unavailable'
-              )}
-            </p>
-          </div>
-        </CardContent>
-      </div>
-
-      <div className="p-4 pt-0 space-y-2">
-        <div className="flex items-center gap-2">
-          {cartQty > 0 ? (
-            <div className="flex items-center gap-1 flex-1 bg-accent/50 rounded-md p-1 border">
-              <button onClick={() => onRemove(product)} className="size-7 rounded bg-background border flex items-center justify-center">
-                <Minus className="size-3" />
-              </button>
-              <span className="flex-1 text-center font-bold text-sm">{cartQty}</span>
-              <button
-                onClick={() => onAdd(product)}
-                disabled={cartQty >= product.stock_quantity}
-                className="size-7 rounded bg-background border flex items-center justify-center disabled:opacity-40"
-              >
-                <Plus className="size-3" />
-              </button>
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              className="flex-1 font-semibold text-xs"
-              onClick={() => onAdd(product)}
-              disabled={!isAvailable}
-            >
-              <ShoppingCart className="size-3 mr-1" /> Add
-            </Button>
-          )}
-
-          <Button size="sm" variant="outline" onClick={() => onViewDetails(product.id)} className="px-2">
-            <Info className="size-3.5" />
-          </Button>
-
-          <Button size="sm" variant="ghost" onClick={() => onBookmark(product)} className="px-2 text-rose-500">
-            <Heart className="size-3.5" />
-          </Button>
-        </div>
-      </div>
-    </Card>
-  )
-}
-
-function CartSidebar({ cart, products, onRemove, onAdd, onClear, onCheckout }) {
-  const cartEntries = Object.entries(cart).filter(([, q]) => q > 0)
-  const total = cartEntries.reduce((sum, [pid, qty]) => {
-    const p = products.find((x) => x.id === Number(pid))
-    return sum + (p ? p.price * qty : 0)
-  }, 0)
+function CartSidebar({ onClear, onCheckout }) {
+  const { cartItems, cartTotal } = useCart()
+  const cartEntries = cartItems.filter((item) => (item.quantity || 0) > 0)
 
   if (cartEntries.length === 0) return null
 
@@ -136,20 +36,19 @@ function CartSidebar({ cart, products, onRemove, onAdd, onClear, onCheckout }) {
         </CardHeader>
         <CardContent className="space-y-3 pt-3">
           <div className="max-h-48 overflow-y-auto space-y-1.5 divide-y">
-            {cartEntries.map(([pid, qty]) => {
-              const p = products.find((x) => x.id === Number(pid))
-              if (!p) return null
+            {cartEntries.map(({ product, quantity }) => {
+              if (!product) return null
               return (
-                <div key={pid} className="flex items-center justify-between text-xs pt-1">
-                  <span className="truncate flex-1 mr-2 font-medium">{p.name} × {qty}</span>
-                  <span className="font-bold text-primary">${(p.price * qty).toFixed(2)}</span>
+                <div key={product.id} className="flex items-center justify-between text-xs pt-1">
+                  <span className="truncate flex-1 mr-2 font-medium">{product.name} × {quantity}</span>
+                  <span className="font-bold text-primary">${(product.price * quantity).toFixed(2)}</span>
                 </div>
               )
             })}
           </div>
           <div className="flex items-center justify-between text-sm font-bold pt-2 border-t">
             <span>Total Amount</span>
-            <span className="text-primary">${total.toFixed(2)}</span>
+            <span className="text-primary">${cartTotal.toFixed(2)}</span>
           </div>
           <Button size="sm" className="w-full font-bold shadow-md" onClick={onCheckout}>
             Proceed to Pre-Order
@@ -160,149 +59,20 @@ function CartSidebar({ cart, products, onRemove, onAdd, onClear, onCheckout }) {
   )
 }
 
-import { validateFutureDate, validateRequired } from '@/lib/validation'
-
-function CheckoutModal({ cart, products, onClose, onSubmit, loading }) {
-  const cartEntries = Object.entries(cart).filter(([, q]) => q > 0)
-  const [pickupDate, setPickupDate] = useState('')
-  const [pickupTime, setPickupTime] = useState('')
-  const [note, setNote] = useState('')
-  const [errors, setErrors] = useState({})
-  const today = new Date().toISOString().split('T')[0]
-
-  const total = cartEntries.reduce((sum, [pid, qty]) => {
-    const p = products.find((x) => x.id === Number(pid))
-    return sum + (p ? p.price * qty : 0)
-  }, 0)
-
-  const farmerGroups = {}
-  cartEntries.forEach(([pid, qty]) => {
-    const p = products.find((x) => x.id === Number(pid))
-    if (!p) return
-    const fid = p.farmer_profile_id
-    if (!farmerGroups[fid]) farmerGroups[fid] = { farmer: p.farmer, items: [] }
-    farmerGroups[fid].items.push({ product_id: Number(pid), quantity: qty, product: p })
-  })
-
-  const multipleFarmers = Object.keys(farmerGroups).length > 1
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setErrors({})
-
-    if (multipleFarmers) {
-      toast.error('All items must be from the same farmer. Please adjust your cart.')
-      return
-    }
-
-    if (cartEntries.length === 0) {
-      toast.error('Your cart is empty.')
-      return
-    }
-
-    const fieldErrors = {}
-    const dateErr = validateFutureDate(pickupDate, 'Pickup Date')
-    if (dateErr) fieldErrors.pickupDate = dateErr
-
-    const timeErr = validateRequired(pickupTime, 'Pickup Time')
-    if (timeErr) fieldErrors.pickupTime = timeErr
-
-    if (Object.keys(fieldErrors).length > 0) {
-      setErrors(fieldErrors)
-      return
-    }
-
-    const [farmerId, group] = Object.entries(farmerGroups)[0]
-    onSubmit({
-      farmer_profile_id: Number(farmerId),
-      pickup_date: pickupDate,
-      pickup_time: pickupTime,
-      note,
-      items: group.items.map(({ product_id, quantity }) => ({ product_id, quantity })),
-    })
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
-          <CardTitle className="text-base font-bold">Confirm Pre-Order</CardTitle>
-          <button onClick={onClose}><X className="size-4" /></button>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {multipleFarmers && (
-              <div className="p-3 bg-destructive/10 text-destructive rounded-md text-xs font-semibold">
-                Your cart contains items from multiple farmers. Please order from one farmer at a time.
-              </div>
-            )}
-
-            <div className="border rounded-md divide-y max-h-48 overflow-y-auto">
-              {cartEntries.map(([pid, qty]) => {
-                const p = products.find((x) => x.id === Number(pid))
-                if (!p) return null
-                return (
-                  <div key={pid} className="flex items-center justify-between px-3 py-2 text-xs">
-                    <span>{p.name} × {qty}</span>
-                    <span className="font-bold">${(p.price * qty).toFixed(2)}</span>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="text-sm font-bold text-right">
-              Total: <span className="text-primary">${total.toFixed(2)}</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Pickup Date *</Label>
-                <Input type="date" min={today} value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} required />
-                {errors.pickupDate && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupDate}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">Pickup Time *</Label>
-                <Input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} required />
-                {errors.pickupTime && <p className="text-[11px] text-destructive mt-0.5">{errors.pickupTime}</p>}
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Note (optional)</Label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={2}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
-                placeholder="Special requests..."
-              />
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
-              <Button type="submit" disabled={loading || multipleFarmers} className="flex-1 font-bold shadow-md">
-                {loading ? 'Placing...' : 'Place Pre-Order'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
 import PageHeroBanner from '@/components/PageHeroBanner'
 
 export default function CustomerProducts({ embedded = false }) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { clearCart } = useCart()
 
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [markets, setMarkets] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') || '')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedMarket, setSelectedMarket] = useState('')
   const [selectedDay, setSelectedDay] = useState('')
@@ -310,7 +80,6 @@ export default function CustomerProducts({ embedded = false }) {
   const [maxPrice, setMaxPrice] = useState('')
   const [inStockOnly, setInStockOnly] = useState(false)
 
-  const [cart, setCart] = useState({})
   const [showCheckout, setShowCheckout] = useState(false)
   const [ordering, setOrdering] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -338,6 +107,13 @@ export default function CustomerProducts({ embedded = false }) {
   }, [selectedCategory, selectedMarket, selectedDay, inStockOnly])
 
   useEffect(() => {
+    const querySearch = searchParams.get('search')
+    if (querySearch !== null && querySearch !== search) {
+      setSearch(querySearch)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
     api.get('/categories').then(({ data }) => setCategories(data.data?.data || data.data || [])).catch(() => {})
     api.get('/markets').then(({ data }) => setMarkets(data.data?.data || data.data || [])).catch(() => {})
   }, [])
@@ -345,32 +121,6 @@ export default function CustomerProducts({ embedded = false }) {
   const handleSearchSubmit = (e) => {
     e.preventDefault()
     fetchProducts()
-  }
-
-  const addToCart = (product) => {
-    setCart((prev) => ({ ...prev, [product.id]: (prev[product.id] || 0) + 1 }))
-  }
-
-  const removeFromCart = (product) => {
-    setCart((prev) => {
-      const next = { ...prev, [product.id]: (prev[product.id] || 1) - 1 }
-      if (next[product.id] <= 0) delete next[product.id]
-      return next
-    })
-  }
-
-  const handleBookmark = async (product) => {
-    if (!user) {
-      setLoginModalMessage('Please sign in to bookmark farm products.')
-      setShowLoginModal(true)
-      return
-    }
-    try {
-      await api.post('/customer/favorites', { favoritable_type: 'product', favoritable_id: product.id })
-      toast.success('Product bookmarked!')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Already bookmarked')
-    }
   }
 
   const handleInitiateCheckout = () => {
@@ -427,7 +177,13 @@ export default function CustomerProducts({ embedded = false }) {
 
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value) {
+                  navigate(`/categories/${e.target.value}`)
+                } else {
+                  setSelectedCategory('')
+                }
+              }}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm font-medium"
             >
               <option value="">All Categories</option>
@@ -513,11 +269,10 @@ export default function CustomerProducts({ embedded = false }) {
               <ProductCard
                 key={p.id}
                 product={p}
-                cartQty={cart[p.id] || 0}
-                onAdd={addToCart}
-                onRemove={removeFromCart}
-                onBookmark={handleBookmark}
-                onViewDetails={(pid) => navigate(`/products/${pid}`)}
+                onRequireLogin={(msg) => {
+                  setLoginModalMessage(msg)
+                  setShowLoginModal(true)
+                }}
               />
             ))}
           </div>
@@ -525,28 +280,13 @@ export default function CustomerProducts({ embedded = false }) {
       </div>
 
       <CartSidebar
-        cart={cart}
-        products={products}
-        onAdd={addToCart}
-        onRemove={removeFromCart}
-        onClear={() => setCart({})}
-        onCheckout={handleInitiateCheckout}
+        onClear={clearCart}
+        onCheckout={() => navigate('/cart')}
       />
-
-      {showCheckout && (
-        <CheckoutModal
-          cart={cart}
-          products={products}
-          onClose={() => setShowCheckout(false)}
-          onSubmit={handleOrderSubmit}
-          loading={ordering}
-        />
-      )}
 
       <LoginRequiredModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onSuccess={() => setShowCheckout(true)}
         title="Authentication Required"
         message={loginModalMessage}
       />

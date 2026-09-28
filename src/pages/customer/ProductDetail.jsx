@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import PageContainer from "@/components/PageContainer"
 import LoginRequiredModal from "@/components/LoginRequiredModal"
 import { useAuth } from "@/context/AuthContext"
+import { useCart } from "@/context/CartContext"
+import { useWishlist } from "@/context/WishlistContext"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -28,15 +30,16 @@ function StarDisplay({ rating }) {
 }
 
 export default function ProductDetail() {
-  const { id } = useParams()
+  const { productId, id } = useParams()
+  const effectiveId = productId || id
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { cart, addToCart } = useCart()
+  const { isWishlisted, toggleWishlist } = useWishlist()
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
-  const [isSaved, setIsSaved] = useState(false)
-  const [favoriteId, setFavoriteId] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [loginModalMessage, setLoginModalMessage] = useState("")
 
@@ -51,10 +54,12 @@ export default function ProductDetail() {
   const [showReviewModal, setShowReviewModal] = useState(false)
 
   const today = new Date().toISOString().split("T")[0]
+  const isSaved = effectiveId ? isWishlisted(effectiveId) : false
 
   const loadProduct = () => {
+    if (!effectiveId) return
     setLoading(true)
-    api.get(`/products/${id}`)
+    api.get(`/products/${effectiveId}`)
       .then(({ data }) => {
         setProduct(data.data)
         if (data.data?.stock_quantity > 0) {
@@ -66,25 +71,14 @@ export default function ProductDetail() {
       .catch(() => toast.error("Failed to load product details"))
       .finally(() => setLoading(false))
 
-    api.get(`/products/${id}/reviews`)
+    api.get(`/products/${effectiveId}/reviews`)
       .then(({ data }) => setReviews(data.data?.data || data.data || []))
       .catch(() => {})
   }
 
-  const checkFavorite = () => {
-    if (!user) return
-    api.get("/customer/favorites/check", {
-      params: { favoritable_type: "product", favoritable_id: id }
-    }).then(({ data }) => {
-      setIsSaved(data.is_favorited)
-      setFavoriteId(data.favorite_id)
-    }).catch(() => {})
-  }
-
   useEffect(() => {
     loadProduct()
-    checkFavorite()
-  }, [id, user])
+  }, [effectiveId])
 
   const handleToggleBookmark = async () => {
     if (!user) {
@@ -93,23 +87,11 @@ export default function ProductDetail() {
       return
     }
 
-    try {
-      if (isSaved && favoriteId) {
-        await api.delete(`/customer/favorites/${favoriteId}`)
-        toast.success("Product removed from bookmarks")
-        setIsSaved(false)
-        setFavoriteId(null)
-      } else {
-        const { data } = await api.post("/customer/favorites", {
-          favoritable_type: "product",
-          favoritable_id: Number(id),
-        })
-        toast.success("Product bookmarked!")
-        setIsSaved(true)
-        setFavoriteId(data.data?.id || data.favorite_id)
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to bookmark product")
+    if (!product) return
+    const result = await toggleWishlist(product)
+    if (result?.requiresLogin) {
+      setLoginModalMessage("Please sign in to bookmark your favorite farm products.")
+      setShowLoginModal(true)
     }
   }
 
@@ -299,10 +281,21 @@ export default function ProductDetail() {
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button
                     size="lg"
-                    className="flex-1 font-bold shadow-md"
+                    variant="outline"
+                    className="flex-1 font-bold border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                    disabled={!isAvailable}
+                    onClick={() => {
+                      addToCart(product, quantity)
+                    }}
+                  >
+                    <Plus className="size-4 mr-1.5" /> Add to Cart
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="flex-1 font-bold shadow-md bg-emerald-600 hover:bg-emerald-700 text-white"
                     disabled={!isAvailable}
                     onClick={handleInitiateOrder}
                   >
@@ -312,7 +305,8 @@ export default function ProductDetail() {
                     size="lg"
                     variant={isSaved ? "default" : "outline"}
                     onClick={handleToggleBookmark}
-                    title={isSaved ? "Remove bookmark" : "Save product"}
+                    title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+                    className={isSaved ? "bg-rose-600 hover:bg-rose-700 text-white" : ""}
                   >
                     <Heart className={`size-5 ${isSaved ? "fill-white" : "text-rose-500"}`} />
                   </Button>

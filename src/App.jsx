@@ -34,6 +34,10 @@ import CustomerMarkets from '@/pages/customer/CustomerMarkets'
 import MarketDetail from '@/pages/customer/MarketDetail'
 import CustomerOrders from '@/pages/customer/CustomerOrders'
 import CustomerFavorites from '@/pages/customer/CustomerFavorites'
+import CategoryDetail from '@/pages/customer/CategoryDetail'
+import CartPage from '@/pages/customer/CartPage'
+import { CartProvider } from '@/context/CartContext'
+import { WishlistProvider } from '@/context/WishlistContext'
 import EverythingYouNeed from './pages/EverythingYouNeed'
 import HowItWorks from './pages/HowItWorks'
 
@@ -62,6 +66,10 @@ function AppRoutes() {
       <Route path="/farmers/:id" element={<FarmerDetail />} />
       <Route path="/products" element={<CustomerProducts />} />
       <Route path="/products/:id" element={<ProductDetail />} />
+      <Route path="/products/:productId" element={<ProductDetail />} />
+      <Route path="/categories/:categoryId" element={<CategoryDetail />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/wishlist" element={<CustomerFavorites />} />
 
       <Route element={<RequireAuth role="admin" />}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -103,17 +111,21 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <AOSInit />
-          <AppRoutes />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3500,
-              style: { borderRadius: '8px', fontSize: '14px' },
-            }}
-          />
-        </BrowserRouter>
+        <CartProvider>
+          <WishlistProvider>
+            <BrowserRouter>
+              <AOSInit />
+              <AppRoutes />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3500,
+                  style: { borderRadius: '8px', fontSize: '14px' },
+                }}
+              />
+            </BrowserRouter>
+          </WishlistProvider>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   )

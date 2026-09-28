@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import PublicLayout from "@/components/PublicLayout"
+import api from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,6 +19,22 @@ import CustomerMarkets from "./customer/CustomerMarkets"
 export default function LandingPage() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
+  const [dbCategories, setDbCategories] = useState([])
+
+  useEffect(() => {
+    api.get('/categories')
+      .then(({ data }) => setDbCategories(data.data || []))
+      .catch(() => {})
+  }, [])
+
+  const handleCategoryClick = (catName) => {
+    const found = dbCategories.find(c => c.name.toLowerCase() === catName.toLowerCase())
+    if (found) {
+      navigate(`/categories/${found.id}`)
+    } else {
+      navigate(`/categories/${encodeURIComponent(catName.toLowerCase().replace(/\s+/g, '-'))}`)
+    }
+  }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
@@ -186,7 +203,7 @@ export default function LandingPage() {
             {categories.map((cat) => (
               <div
                 key={cat.name}
-                onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
+                onClick={() => handleCategoryClick(cat.name)}
                 className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-md border hover:shadow-xl transition-all"
               >
                 <img

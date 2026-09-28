@@ -1,12 +1,16 @@
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { useTheme } from "@/context/ThemeContext"
+import { useCart } from "@/context/CartContext"
+import { useWishlist } from "@/context/WishlistContext"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sun, Moon, Heart, ShoppingBag, Package, LogOut } from "lucide-react"
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { cartCount } = useCart()
+  const { wishlistCount } = useWishlist()
   const location = useLocation()
 
   const isActive = (path) => location.pathname === path
@@ -43,24 +47,24 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <Link
-            to={user ? "/customer/favorites" : "/login"}
+            to="/wishlist"
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Wishlist"
           >
             <Heart className="size-5" />
             <span className="absolute -top-1 -right-1 size-4 rounded-full bg-destructive text-white text-[10px] font-bold flex items-center justify-center">
-              0
+              {wishlistCount}
             </span>
           </Link>
 
           <Link
-            to="/products"
+            to="/cart"
             className="relative p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Cart"
           >
             <ShoppingBag className="size-5" />
             <span className="absolute -top-1 -right-1 size-4 rounded-full bg-destructive text-white text-[10px] font-bold flex items-center justify-center">
-              0
+              {cartCount}
             </span>
           </Link>
 
