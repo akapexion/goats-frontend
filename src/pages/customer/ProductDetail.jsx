@@ -240,7 +240,7 @@ export default function ProductDetail() {
               <div className="space-y-2 border-b pb-4">
                 <h1 className="text-3xl font-extrabold tracking-tight">{product.name}</h1>
                 <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-3xl font-black text-primary">${Number(product.price).toFixed(2)}</span>
+                  <span className="text-3xl font-black text-primary">RS{Number(product.price).toFixed(2)}</span>
                   <span className="text-muted-foreground font-medium text-sm">per {product.unit}</span>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function ProductDetail() {
                         <Plus className="size-4" />
                       </button>
                       <span className="text-xs text-muted-foreground ml-2">
-                        Total: <strong className="text-foreground">${(product.price * quantity).toFixed(2)}</strong>
+                        Total: <strong className="text-foreground">RS{(product.price * quantity).toFixed(2)}</strong>
                       </span>
                     </div>
                   </div>
@@ -430,9 +430,9 @@ export default function ProductDetail() {
                 <div className="p-3 bg-muted/40 rounded-lg text-sm space-y-1 border">
                   <div className="flex justify-between font-semibold">
                     <span>{product.name} × {quantity}</span>
-                    <span className="text-primary">${(product.price * quantity).toFixed(2)}</span>
+                    <span className="text-primary">RS{(product.price * quantity).toFixed(2)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Unit price: ${Number(product.price).toFixed(2)} / {product.unit}</p>
+                  <p className="text-xs text-muted-foreground">Unit price: RS{Number(product.price).toFixed(2)} / {product.unit}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
