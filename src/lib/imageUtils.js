@@ -15,10 +15,10 @@ export function getProductImageUrl(imagePath) {
   }
 
   if (imagePath.startsWith('/storage/')) {
-    return `https://sfc-goats.oespk.com/storage/${imagePath}`
+    return `https://sfc-goats.oespk.com/storage/app/public/${imagePath}`
   }
   if (imagePath.startsWith('storage/')) {
-    return `https://sfc-goats.oespk.com/storage/${imagePath}`
+    return `https://sfc-goats.oespk.com/storage/app/public/${imagePath}`
   }
 
   const cleanPath = imagePath.replace(/^\/+/, '')
