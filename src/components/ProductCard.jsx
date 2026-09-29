@@ -79,7 +79,7 @@ export default function ProductCard({ product, onRequireLogin }) {
         <CardContent className="space-y-2 text-xs">
           <div className="flex items-baseline justify-between pt-1">
             <span className="font-extrabold text-base text-primary">
-              ${Number(product.price).toFixed(2)}
+              {Number(product.price).toFixed(2)}
             </span>
             <span className="text-muted-foreground font-medium">per {product.unit}</span>
           </div>
