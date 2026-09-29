@@ -202,11 +202,11 @@ export default function CartPage() {
                                 {product.name}
                               </h4>
                               <p className="text-xs text-muted-foreground">
-                                ${Number(product.price).toFixed(2)} / {product.unit}
+                                RS{Number(product.price).toFixed(2)} / {product.unit}
                               </p>
                               <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                                 <CheckCircle2 className="size-3" />
-                                Subtotal: ${itemTotal}
+                                Subtotal: RS{itemTotal}
                               </div>
                             </div>
                           </div>
@@ -288,7 +288,7 @@ export default function CartPage() {
                     <div className="flex justify-between text-base font-extrabold text-foreground pt-2 border-t">
                       <span>Order Total</span>
                       <span className="text-emerald-600 dark:text-emerald-400">
-                        ${cartTotal.toFixed(2)}
+                        RS{cartTotal.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function CartPage() {
                         'Submitting Pre-Order...'
                       ) : (
                         <>
-                          Reserve Pre-Order (${cartTotal.toFixed(2)})
+                          Reserve Pre-Order (RS{cartTotal.toFixed(2)})
                           <ArrowRight className="size-4" />
                         </>
                       )}
